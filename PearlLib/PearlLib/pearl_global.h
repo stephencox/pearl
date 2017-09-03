@@ -7,7 +7,7 @@
     #else
         #define PEARL_API __declspec(dllimport)
     #endif
-#elif
+#else
     #define PEARL_API
 #endif
 

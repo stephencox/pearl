@@ -1,5 +1,4 @@
 TEMPLATE = subdirs
-
-SUBDIRS += \
-    PearlLib \
-    PearlLibConsole
+CONFIG += ordered
+SUBDIRS += PearlLib PearlLibConsole
+PearlLibConsole.depends = PearlLib

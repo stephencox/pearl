@@ -2,6 +2,7 @@
 #define PEARL_LAYER_H
 
 #include <stdlib.h>
+#include <math.h>
 #include <pearl_activation_function.h>
 
 enum pearl_layer_type {

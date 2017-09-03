@@ -62,3 +62,10 @@ PEARL_API void pearl_network_layers_initialise(struct pearl_network *network)
         pearl_layer_initialise(&network->layers[i], &network->layers[i - 1]);
     }
 }
+
+PEARL_API void pearl_network_train_epoch(struct pearl_network *network, const double *input, const double *output)
+{
+    //Forward
+    for (int i = 1; i < network->num_layers; i++) {
+    }
+}
