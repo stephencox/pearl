@@ -38,19 +38,12 @@ int main()
     pearl_matrix *c = pearl_matrix_muliply_transpose_plain(x, y);
     clock_t end_a = clock();
 
-    printf("Running cblas\n");
-    clock_t begin_b = clock();
-    pearl_matrix *d = pearl_matrix_muliply_transpose_cblas(x, y);
-    clock_t end_b = clock();
-
     double time_spent_a = (double)(end_a - begin_a) / CLOCKS_PER_SEC;
-    double time_spent_b = (double)(end_b - begin_b) / CLOCKS_PER_SEC;
 
-    printf("a=%0.6f\nb=%0.6f\nspeedup_b=%0.2f x\n", time_spent_a * 1000, time_spent_b * 1000, time_spent_a / time_spent_b);
+    printf("a=%0.6f\n", time_spent_a * 1000);
 
     free(x);
     free(y);
     pearl_matrix_destroy(c);
-    pearl_matrix_destroy(d);
     return 0;
 }

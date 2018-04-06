@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>
-#include <cblas.h>
 #include <pearl_global.h>
 
 typedef struct {

@@ -45,11 +45,3 @@ PEARL_API pearl_matrix *pearl_matrix_muliply_transpose_plain(pearl_matrix *x, pe
     }
     return result;
 }
-
-PEARL_API pearl_matrix *pearl_matrix_muliply_transpose_cblas(pearl_matrix *x, pearl_matrix *y)
-{
-    assert(x->n == y->m);
-    pearl_matrix *result = pearl_matrix_create(x->m, y->n);
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, x->m, y->n, x->n, 1, x->data, x->n, y->data, y->n, 1, result->data, result->n);
-    return result;
-}
