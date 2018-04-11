@@ -24,7 +24,7 @@ PEARL_API void pearl_network_destroy(struct pearl_network *network)
 PEARL_API void pearl_network_layer_add(struct pearl_network *network, enum pearl_layer_type type, int neurons, enum pearl_activation_function_type activation_function)
 {
     network->num_layers++;
-    if (network->num_layers > 0) {
+    if (network->num_layers > 1) {
         network->layers = (struct pearl_layer *)realloc(network->layers, network->num_layers * sizeof(struct pearl_layer)); //TODO: error checking
     }
     else {
@@ -33,6 +33,8 @@ PEARL_API void pearl_network_layer_add(struct pearl_network *network, enum pearl
     network->layers[network->num_layers - 1].type = type;
     network->layers[network->num_layers - 1].neurons = neurons;
     network->layers[network->num_layers - 1].activation_function = activation_function;
+    network->layers[network->num_layers - 1].weights = NULL;
+    network->layers[network->num_layers - 1].biases = NULL;
 }
 
 PEARL_API void pearl_network_layer_add_input(struct pearl_network *network, int neurons)

@@ -2,10 +2,12 @@
 #define PEARL_LAYER_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <pearl_activation_function.h>
 #include <pearl_matrix.h>
 #include <pearl_vector.h>
+#include <pearl_activation_function.h>
 
 enum pearl_layer_type {
     pearl_layer_type_input,
@@ -25,6 +27,7 @@ struct pearl_layer {
 
 void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer *prev_layer);
 void pearl_layer_destroy(struct pearl_layer *layer);
+void pearl_layer_print(struct pearl_layer *layer);
 struct pearl_matrix *pearl_layer_forward(struct pearl_layer *layer, const struct pearl_matrix *input);
 
 #endif // PEARL_LAYER_H
