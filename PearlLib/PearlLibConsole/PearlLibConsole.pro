@@ -11,3 +11,11 @@ else:unix: LIBS += -L$$OUT_PWD/../PearlLib/ -lPearlLib
 
 INCLUDEPATH += $$PWD/../PearlLib
 DEPENDPATH += $$PWD/../PearlLib
+
+linux: {
+    QMAKE_CFLAGS_RELEASE += -march=native -O3
+}
+
+win32: {
+    QMAKE_CFLAGS_RELEASE += -Ox
+}

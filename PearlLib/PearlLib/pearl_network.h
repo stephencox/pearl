@@ -5,6 +5,7 @@
 #include <pearl_global.h>
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>
+#include <pearl_matrix.h>
 
 struct pearl_network {
     int num_layers;
@@ -20,5 +21,6 @@ PEARL_API void pearl_network_layer_add_output(struct pearl_network *network, int
 PEARL_API void pearl_network_layer_add_fully_connect(struct pearl_network *network, int neurons, enum pearl_activation_function_type activation_function);
 PEARL_API void pearl_network_layer_add_dropout(struct pearl_network *network, int neurons, enum pearl_activation_function_type activation_function, double dropout_rate);
 PEARL_API void pearl_network_layers_initialise(struct pearl_network *network);
+PEARL_API void pearl_network_train_epoch(struct pearl_network *network, const struct pearl_matrix *input, const struct pearl_matrix *output);
 
 #endif // PEARL_NETWORK_H

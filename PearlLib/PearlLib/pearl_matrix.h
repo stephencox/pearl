@@ -6,17 +6,17 @@
 #include <stdio.h>
 #include <time.h>
 #include <pearl_global.h>
+#include <pearl_vector.h>
 
-typedef struct {
+struct pearl_matrix {
     int m, n;
     double *data;
-} pearl_matrix;
+};
 
 #define ARRAY_IDX(i,j,n) (i*n+j)
 
-PEARL_API pearl_matrix *pearl_matrix_create(int m, int n);
-PEARL_API void pearl_matrix_destroy(pearl_matrix *x);
-PEARL_API void pearl_matrix_print(pearl_matrix *x);
-PEARL_API pearl_matrix *pearl_matrix_muliply_transpose_plain(pearl_matrix *x, pearl_matrix *y);
-PEARL_API pearl_matrix *pearl_matrix_muliply_transpose_cblas(pearl_matrix *x, pearl_matrix *y);
+PEARL_API struct pearl_matrix *pearl_matrix_create(int m, int n);
+PEARL_API void pearl_matrix_destroy(struct pearl_matrix *x);
+PEARL_API void pearl_matrix_print(struct pearl_matrix *x);
+
 #endif // PEARL_MATRIX_H

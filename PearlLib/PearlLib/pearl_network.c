@@ -63,9 +63,9 @@ PEARL_API void pearl_network_layers_initialise(struct pearl_network *network)
     }
 }
 
-PEARL_API void pearl_network_train_epoch(struct pearl_network *network, const double *input, const double *output)
+PEARL_API void pearl_network_train_epoch(struct pearl_network *network, const struct pearl_matrix *input, const struct pearl_matrix *output)
 {
-    //Forward
     for (int i = 1; i < network->num_layers; i++) {
+        struct pearl_matrix *z = pearl_layer_forward(&network->layers[i], input);
     }
 }
