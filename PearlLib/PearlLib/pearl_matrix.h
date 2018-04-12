@@ -8,15 +8,15 @@
 #include <pearl_global.h>
 #include <pearl_vector.h>
 
-struct pearl_matrix {
+typedef struct {
     int m, n;
     double *data;
-};
+} pearl_matrix;
 
 #define ARRAY_IDX(i,j,n) (i*n+j)
 
-PEARL_API struct pearl_matrix *pearl_matrix_create(int m, int n);
-PEARL_API void pearl_matrix_destroy(struct pearl_matrix *x);
-PEARL_API void pearl_matrix_print(struct pearl_matrix *x);
+PEARL_API pearl_matrix *pearl_matrix_create(int m, int n);
+PEARL_API void pearl_matrix_destroy(pearl_matrix *x);
+PEARL_API void pearl_matrix_print(pearl_matrix *x);
 
 #endif // PEARL_MATRIX_H

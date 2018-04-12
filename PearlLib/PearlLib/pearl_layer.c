@@ -1,6 +1,6 @@
 #include <pearl_layer.h>
 
-void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer *prev_layer)
+void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer)
 {
     if (layer) {
         if (prev_layer) {
@@ -9,7 +9,7 @@ void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer 
                 pearl_layer_print(layer);
             }
             if (layer->weights == NULL) {
-                layer->weights = pearl_vector_create(layer->neurons * prev_layer->neurons);
+                layer->weights = pearl_matrix_create(prev_layer->neurons, layer->neurons);
                 pearl_layer_print(layer);
                 double scale = 1.0;
                 //https://arxiv.org/abs/1704.08863
@@ -26,7 +26,7 @@ void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer 
                         scale = sqrt(6.0 / (layer->neurons + prev_layer->neurons));
                         break;
                 }
-                for (int i = 0; i < layer->weights->n; i++) {
+                for (int i = 0; i < layer->weights->m*layer->weights->n; i++) {
                     layer->weights->data[i] = -1.0+((float)rand()/(float)(RAND_MAX)) * scale * 2.0;
                 }
                 pearl_layer_print(layer);
@@ -35,19 +35,19 @@ void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer 
     }
 }
 
-void pearl_layer_destroy(struct pearl_layer *layer)
+void pearl_layer_destroy(pearl_layer *layer)
 {
     if (layer) {
         if (layer) {
             pearl_vector_destroy(layer->biases);
         }
         if (layer->weights) {
-            pearl_vector_destroy(layer->weights);
+            pearl_matrix_destroy(layer->weights);
         }
     }
 }
 
-void pearl_layer_print(struct pearl_layer *layer){
+void pearl_layer_print(pearl_layer *layer){
     if(layer){
         printf("Type: pearl_layer\n");
         printf("Type: ");
@@ -89,9 +89,7 @@ void pearl_layer_print(struct pearl_layer *layer){
 
         printf("Weights: ");
         if(layer->weights){
-            for(int i=0; i<layer->weights->n; i++){
-                printf("%f ", layer->weights->data[i]);
-            }
+            pearl_matrix_print(layer->weights);
         } else {
             printf("None");
         }
@@ -112,19 +110,20 @@ void pearl_layer_print(struct pearl_layer *layer){
     }
 }
 
-struct pearl_matrix *pearl_layer_forward(struct pearl_layer *layer, const struct pearl_matrix *input){
-    assert(input->m == layer->weights->n);
-    assert(input->m == layer->biases->n);
-    struct pearl_matrix *result = pearl_matrix_create(input->m, layer->weights->n);
+pearl_matrix *pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input){
+    assert(input->n == layer->weights->m);
+    assert(input->n == layer->biases->n);
+    pearl_matrix *result = pearl_matrix_create(input->m, layer->weights->n);
 
     double (*activationFunctionPtr)(double) = pearl_activation_function_pointer(layer->type);
 
     for (int i = 0; i < input->m; i++) {
         for (int j = 0; j < layer->weights->n; j++) {
             double sum = 0;
-            for (int k = 0; k < layer->weights->n; k++) {
-                sum += input->data[ARRAY_IDX(i, k, input->n)] * layer->weights->data[j] + layer->biases->data[j];
+            for (int k = 0; k < layer->weights->m; k++) {
+                sum += input->data[ARRAY_IDX(i, k, input->n)] * layer->weights->data[ARRAY_IDX(k, j, layer->weights->n)];
             }
+            sum += + layer->biases->data[j];
             result->data[ARRAY_IDX(i, j, result->n)] = (*activationFunctionPtr)(sum);
         }
     }

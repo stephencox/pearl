@@ -16,18 +16,18 @@ enum pearl_layer_type {
     pearl_layer_type_output
 };
 
-struct pearl_layer {
+typedef struct {
     enum pearl_layer_type type;
     enum pearl_activation_function_type activation_function;
     int neurons;
     double dropout_rate;
-    pearl_vector *weights;
+    pearl_matrix *weights;
     pearl_vector *biases;
-};
+} pearl_layer;
 
-void pearl_layer_initialise(struct pearl_layer *layer, const struct pearl_layer *prev_layer);
-void pearl_layer_destroy(struct pearl_layer *layer);
-void pearl_layer_print(struct pearl_layer *layer);
-struct pearl_matrix *pearl_layer_forward(struct pearl_layer *layer, const struct pearl_matrix *input);
+void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer);
+void pearl_layer_destroy(pearl_layer *layer);
+void pearl_layer_print(pearl_layer *layer);
+pearl_matrix *pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input);
 
 #endif // PEARL_LAYER_H
