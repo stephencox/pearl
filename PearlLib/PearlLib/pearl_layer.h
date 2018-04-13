@@ -28,6 +28,6 @@ typedef struct {
 void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer);
 void pearl_layer_destroy(pearl_layer *layer);
 void pearl_layer_print(pearl_layer *layer);
-pearl_matrix *pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input);
+void pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input, pearl_matrix *a, pearl_matrix *z);
 
 #endif // PEARL_LAYER_H

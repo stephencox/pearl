@@ -14,9 +14,9 @@ HEADERS += pearl_activation_function.h pearl_optimiser.h pearl_network.h pearl_l
     pearl_vector.h
 
 linux: {
-    QMAKE_CFLAGS += -march=native -O3
+    QMAKE_CFLAGS_RELEASE += -march=native -O3
 }
 
 win32: {
-    QMAKE_CFLAGS += -Ox
+    QMAKE_CFLAGS_RELEASE += -Ox
 }

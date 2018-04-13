@@ -6,6 +6,7 @@
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>
 #include <pearl_matrix.h>
+#include <time.h>
 
 typedef struct {
     int num_layers;
