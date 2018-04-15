@@ -12,6 +12,7 @@ typedef struct {
     int num_layers;
     pearl_layer *layers;
     enum pearl_optimiser optimiser;
+    double learning_rate;
 } pearl_network;
 
 PEARL_API pearl_network *pearl_network_create();

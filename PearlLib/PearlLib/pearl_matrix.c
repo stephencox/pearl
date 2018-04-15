@@ -3,6 +3,7 @@
 PEARL_API pearl_matrix *pearl_matrix_create(int m, int n)
 {
     pearl_matrix *result = malloc(sizeof(pearl_matrix));
+    printf("pearl_matrix_create at %p\n", (void *)result);
     result->m = m;
     result->n = n;
     result->data = calloc(m * n, sizeof(double));
@@ -11,6 +12,7 @@ PEARL_API pearl_matrix *pearl_matrix_create(int m, int n)
 
 PEARL_API void pearl_matrix_destroy(pearl_matrix *x)
 {
+    printf("pearl_matrix_destroy at %p\n", (void *)x);
     if (x) {
         if (x->data) {
             free(x->data);
@@ -28,4 +30,14 @@ PEARL_API void pearl_matrix_print(pearl_matrix *x)
         }
         printf("\n");
     }
+}
+
+PEARL_API pearl_matrix *pearl_matrix_copy(pearl_matrix *x){
+    pearl_matrix *result = pearl_matrix_create(x->m, x->n);
+    for (int i = 0; i < x->m; i++) {
+        for (int j = 0; j < x->n; j++) {
+            result->data[ARRAY_IDX(i, j, x->n)] = x->data[ARRAY_IDX(i, j, x->n)];
+        }
+    }
+    return result;
 }

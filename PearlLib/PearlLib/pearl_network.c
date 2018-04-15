@@ -1,10 +1,13 @@
 #include <pearl_network.h>
 
+// TODO: Save network in sqlite
+
 PEARL_API pearl_network *pearl_network_create()
 {
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
+    network->learning_rate = 1e-3;
     return network;
 }
 
@@ -60,7 +63,7 @@ PEARL_API void pearl_network_layer_add_fully_connect(pearl_network *network, int
 
 PEARL_API void pearl_network_layers_initialise(pearl_network *network)
 {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     for (int i = 1; i < network->num_layers; i++) {
         pearl_layer_initialise(&network->layers[i], &network->layers[i - 1]);
     }
@@ -71,26 +74,24 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_mat
     pearl_matrix **z = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
     pearl_matrix **a = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
     // Forward
-    for (int i = 1; i < network->num_layers; i++) {
-        if (i == 1) {
-            z[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-            a[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-            pearl_layer_forward(&network->layers[i], input, z[i - 1], a[i - 1]);
-        }
-        else {
-            z[i - 1] = pearl_matrix_create(z[i - 2]->m, network->layers[i].weights->m);
-            a[i - 1] = pearl_matrix_create(a[i - 2]->m, network->layers[i].weights->m);
-            pearl_layer_forward(&network->layers[i], a[i - 2], z[i - 1], a[i - 1]);
-        }
+    a[0] = pearl_matrix_copy(input);
+    for (int i = 1; i < network->num_layers-1; i++) {
+        assert(z[i] == NULL);
+        z[i] = pearl_matrix_create(input->m, network->layers[i].weights->m);
+        printf("malloced matrix in z[%d] at %p\n", i, (void *)z[i]);
+        assert(a[i] == NULL);
+        a[i] = pearl_matrix_create(input->m, network->layers[i].weights->m);
+        printf("malloced matrix in a[%d] at %p\n", i, (void *)a[i]);
+        pearl_layer_forward(&network->layers[i], a[i-1], z[i], a[i]);
         printf("Result:");
-        pearl_matrix_print(a[i - 1]);
-        pearl_matrix_print(z[i - 1]);
+        pearl_matrix_print(a[i]);
+        pearl_matrix_print(z[i]);
     }
     // Cost
     double cost = 0.0;
     pearl_matrix *al = a[network->num_layers - 2];
     for (int i = 0; i < output->m; i++) {
-        if (al->data[i] > 0.0) {
+        if (output->data[i] > 0.0) {
             cost += log(al->data[i]);
         }
         else {
@@ -98,27 +99,76 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_mat
         }
     }
     cost /= (double)(-output->n);
-    printf("Cost: %f\n", cost);
+    printf("Loss: %f\n", cost);
+
     //Backward
-    for (int i = 1; i < network->num_layers; i++) {
-        if (i == 1) {
-            a[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-            z[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-            pearl_layer_forward(&network->layers[i], input, a[i - 1], z[i - 1]);
+    pearl_matrix **dw = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
+    pearl_vector **db = calloc(network->num_layers - 1, sizeof(pearl_vector *));
+    pearl_matrix **dz = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
+    for (int i = network->num_layers - 1; i > 1; i--) {
+        if (i == network->num_layers - 1) {
+            assert(dz[i - 1] == NULL);
+            dz[i - 1] = pearl_matrix_create(output->m, output->n);
+            printf("malloced matrix in dz[%d] at %p\n", i-1, (void *)dz[i - 1]);
+            for (int j = 0; j < output->m; j++) {
+                if (output->data[j] > 0.0) {
+                    dz[i - 1]->data[j] = - (output->data[j] / al->data[j]);
+                }
+                else {
+                    dz[i - 1]->data[j] = - ((1.0 - output->data[j]) / (1.0 - al->data[j]));
+                }
+            }
+            assert(dw[i - 1] == NULL);
+            dw[i - 1] = pearl_matrix_create(dz[i-1]->m, a[i-1]->m);
+            printf("malloced matrix in dw[%d] at %p\n", i-1, (void *)dw[i - 1]);
+            assert(db[i - 1] == NULL);
+            db[i - 1] = pearl_vector_create(a[i-1]->m);
+            printf("malloced matrix in db[%d] at %p\n", i-1, (void *)db[i - 1]);
+            assert(dz[i - 2] == NULL);
+            pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1], dz[i - 2]);
+            printf("malloced matrix in dz[%d] at %p\n", i-2, (void *)dz[i - 2]);
+        }
+        else if (i == 1) {
+            assert(dw[i - 1] == NULL);
+            dw[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
+            printf("malloced matrix in dw[%d] at %p\n", i-1, (void *)dw[i - 1]);
+            assert(db[i - 1] == NULL);
+            db[i - 1] = pearl_vector_create(input->m);
+            printf("malloced matrix in db[%d] at %p\n", i-1, (void *)db[i - 1]);
+            assert(dz[i - 2] == NULL);
+            pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1], dz[i - 2]);
+            printf("malloced matrix in dz[%d] at %p\n", i-2, (void *)dz[i - 2]);
         }
         else {
-            a[i - 1] = pearl_matrix_create(a[i - 2]->m, network->layers[i].weights->m);
-            z[i - 1] = pearl_matrix_create(z[i - 2]->m, network->layers[i].weights->m);
-            pearl_layer_forward(&network->layers[i], z[i - 2], a[i - 1], z[i - 1]);
+            assert(dw[i - 1] == NULL);
+            dw[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
+            printf("malloced matrix in dw[%d] at %p\n", i-1, (void *)dw[i - 1]);
+            assert(db[i - 1] == NULL);
+            db[i - 1] = pearl_vector_create(input->m);
+            printf("malloced matrix in db[%d] at %p\n", i-1, (void *)db[i - 1]);
+            assert(dz[i - 2] == NULL);
+            pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1], dz[i - 2]);
+            printf("malloc matrix in dz[%d] at %p\n", i-2, (void *)dz[i - 2]);
         }
         printf("Result:");
         pearl_matrix_print(z[i - 1]);
     }
     // Clean
-    for (int i = 0; i < network->num_layers - 2; i++) {
+    for (int i = 0; i < network->num_layers - 1; i++) {
+        printf("destroy matrix in a[%d] at %p\n", i, (void *)a[i]);
         pearl_matrix_destroy(a[i]);
+        printf("destroy matrix in z[%d] at %p\n", i, (void *)z[i]);
         pearl_matrix_destroy(z[i]);
+        printf("destroy matrix in dw[%d] at %p\n", i, (void *)dw[i]);
+        pearl_matrix_destroy(dw[i]);
+        printf("destroy matrix in db[%d] at %p\n", i, (void *)db[i]);
+        pearl_vector_destroy(db[i]);
+        printf("destroy matrix in dz[%d] at %p\n", i, (void *)dz[i]);
+        pearl_matrix_destroy(dz[i]);
     }
     free(a);
     free(z);
+    free(dw);
+    free(db);
+    free(dz);
 }
