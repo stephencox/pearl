@@ -29,6 +29,6 @@ void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer);
 void pearl_layer_destroy(pearl_layer *layer);
 void pearl_layer_print(pearl_layer *layer);
 void pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input, pearl_matrix *z, pearl_matrix *a);
-void pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_matrix *dz, pearl_matrix *a, pearl_matrix *z, pearl_matrix *dw, pearl_vector *db, pearl_matrix *dz_prev);
+pearl_matrix *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_matrix *dz, pearl_matrix *a, pearl_matrix *z, pearl_matrix *dw, pearl_vector *db);
 
 #endif // PEARL_LAYER_H

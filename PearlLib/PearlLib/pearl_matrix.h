@@ -18,6 +18,6 @@ typedef struct {
 PEARL_API pearl_matrix *pearl_matrix_create(int m, int n);
 PEARL_API void pearl_matrix_destroy(pearl_matrix *x);
 PEARL_API void pearl_matrix_print(pearl_matrix *x);
-PEARL_API pearl_matrix *pearl_matrix_copy(pearl_matrix *x);
+PEARL_API pearl_matrix *pearl_matrix_copy(const pearl_matrix *x);
 
 #endif // PEARL_MATRIX_H

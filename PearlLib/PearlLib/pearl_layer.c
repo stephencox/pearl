@@ -122,50 +122,52 @@ void pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input, pearl_ma
         for (int j = 0; j < layer->weights->m; j++) {
             double sum = 0;
             for (int k = 0; k < layer->weights->n; k++) {
-                //printf("input: %d  access: %d\n",input->m*input->n, ARRAY_IDX(i, k, input->n));
-                //assert(ARRAY_IDX(i, k, input->n) < input->m*input->n);
-                //printf("weights: %d  access: %d\n",layer->weights->m*layer->weights->n, ARRAY_IDX(k, j, layer->weights->m));
-                //assert(ARRAY_IDX(k, j, layer->weights->m) < layer->weights->m*layer->weights->n);
-                //printf("input=%f  weight=%f\n", input->data[ARRAY_IDX(i, k, input->n)],layer->weights->data[ARRAY_IDX(k, j, layer->weights->m)] );
+                assert(ARRAY_IDX(i, k, input->n) < input->m*input->n);
+                assert(ARRAY_IDX(k, j, layer->weights->m) < layer->weights->m*layer->weights->n);
                 sum += input->data[ARRAY_IDX(i, k, input->n)] * layer->weights->data[ARRAY_IDX(k, j, layer->weights->m)];
             }
             sum += layer->biases->data[j];
+            assert(ARRAY_IDX(i, j, z->n) < z->m*z->n);
             z->data[ARRAY_IDX(i, j, z->n)] = sum;
+            assert(ARRAY_IDX(i, j, a->n) < a->m*a->n);
             a->data[ARRAY_IDX(i, j, a->n)] = (*activationFunctionPtr)(sum);
         }
     }
 }
 
-void pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_matrix *dz, pearl_matrix *a, pearl_matrix *z, pearl_matrix *dw, pearl_vector *db, pearl_matrix *dz_prev){
+pearl_matrix *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_matrix *dz, pearl_matrix *a, pearl_matrix *z, pearl_matrix *dw, pearl_vector *db){
     double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer->activation_function);
 
-    for (int i = 0; i < dz->m; i++) {
-        double sum_b = 0;
-        for (int j = 0; j < a->m; j++) {
+    for (int i = 0; i < a->m; i++) {
+        for (int j = 0; j < dz->m; j++) {
             double sum_w = 0;
-            for (int k = 0; k < a->n; k++) {
-                printf("dz: %d  access: %d\n",dz->m*dz->n, ARRAY_IDX(k, j, dz->m));
+            double sum_b = 0;
+            for (int k = 0; k < dz->n; k++) {
                 assert(ARRAY_IDX(k, j, dz->m) < dz->m*dz->n);
-                printf("a: %d  access: %d\n",a->m*a->n, ARRAY_IDX(i, k, a->n));
                 assert(ARRAY_IDX(i, k, a->n) < a->m*a->n);
                 sum_w += dz->data[ARRAY_IDX(k, j, dz->m)] * a->data[ARRAY_IDX(i, k, a->n)];
                 sum_b += dz->data[ARRAY_IDX(k, j, dz->m)];
             }
-            sum_w /= dz->m;
-            dw->data[ARRAY_IDX(i, j, dw->m)] = sum_w;
+            assert(ARRAY_IDX(i, j, dw->m) < dw->m*dw->n);
+            dw->data[ARRAY_IDX(i, j, dw->m)] = sum_w/dz->m;
+            assert(i < db->n);
+            db->data[i] = sum_b/db->n;
         }
-        sum_b /= dz->m;
-        db->data[i] = sum_b;
     }
 
-    dz_prev = pearl_matrix_create(dz->m, layer->weights->n);
+    pearl_matrix *dz_prev = pearl_matrix_create(dz->m, layer->weights->n);
+    printf("Creating dz at %p\n", (void *)dz_prev);
     for (int i = 0; i < dz->m; i++) {
         for (int j = 0; j < layer->weights->n; j++) {
             double sum = 0;
             for (int k = 0; k < layer->weights->m; k++) {
+                assert(ARRAY_IDX(i, k, dz_prev->n) < dz_prev->m*dz_prev->n);
+                assert(ARRAY_IDX(k, j, layer->weights->n) < layer->weights->m*layer->weights->n);
                 sum += dz_prev->data[ARRAY_IDX(i, k, dz_prev->n)] * layer->weights->data[ARRAY_IDX(k, j, layer->weights->n)];
             }
             dz_prev->data[ARRAY_IDX(i, j, dz_prev->n)] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX(i, j, z->n)] );
         }
     }
+
+    return dz_prev;
 }
