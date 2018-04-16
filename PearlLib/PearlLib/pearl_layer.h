@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <pearl_activation_function.h>
-#include <pearl_matrix.h>
-#include <pearl_vector.h>
+#include <pearl_tensor.h>
 #include <pearl_activation_function.h>
 
 enum pearl_layer_type {
@@ -21,14 +20,14 @@ typedef struct {
     enum pearl_activation_function_type activation_function;
     int neurons;
     double dropout_rate;
-    pearl_matrix *weights;
-    pearl_vector *biases;
+    pearl_tensor *weights;
+    pearl_tensor *biases;
 } pearl_layer;
 
 void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer);
 void pearl_layer_destroy(pearl_layer *layer);
 void pearl_layer_print(pearl_layer *layer);
-void pearl_layer_forward(pearl_layer *layer, const pearl_matrix *input, pearl_matrix *z, pearl_matrix *a);
-pearl_matrix *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_matrix *dz, pearl_matrix *a, pearl_matrix *z, pearl_matrix *dw, pearl_vector *db);
+void pearl_layer_forward(pearl_layer *layer, const pearl_tensor *input, pearl_tensor *z, pearl_tensor *a);
+pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db);
 
 #endif // PEARL_LAYER_H

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <pearl_network.h>
-#include <pearl_matrix.h>
+#include <pearl_tensor.h>
 
 int main()
 {
@@ -10,8 +10,8 @@ int main()
     pearl_network_layer_add_output(network, 1, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(network);
 
-    pearl_matrix *input = pearl_matrix_create(4,2);
-    pearl_matrix *output = pearl_matrix_create(4,1);
+    pearl_tensor *input = pearl_tensor_create(2,4,2);
+    pearl_tensor *output = pearl_tensor_create(2,4,1);
     int counter_in = 0, counter_out = 0;
     for(int i=0; i<=1; i++){
         for(int j=0; j<=1; j++){
@@ -25,16 +25,11 @@ int main()
         }
     }
 
-    printf("Input:\n");
-    pearl_matrix_print(input);
-    printf("Output:\n");
-    pearl_matrix_print(output);
-
     pearl_network_train_epoch(network, input, output);
 
     pearl_network_destroy(network);
-    pearl_matrix_destroy(input);
-    pearl_matrix_destroy(output);
+    pearl_tensor_destroy(input);
+    pearl_tensor_destroy(output);
 
     return 0;
 }

@@ -5,7 +5,7 @@
 #include <pearl_global.h>
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>
-#include <pearl_matrix.h>
+#include <pearl_tensor.h>
 #include <time.h>
 
 typedef struct {
@@ -23,6 +23,6 @@ PEARL_API void pearl_network_layer_add_output(pearl_network *network, int neuron
 PEARL_API void pearl_network_layer_add_fully_connect(pearl_network *network, int neurons, enum pearl_activation_function_type activation_function);
 PEARL_API void pearl_network_layer_add_dropout(pearl_network *network, int neurons, enum pearl_activation_function_type activation_function, double dropout_rate);
 PEARL_API void pearl_network_layers_initialise(pearl_network *network);
-PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_matrix *input, const pearl_matrix *output);
+PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_tensor *input, const pearl_tensor *output);
 
 #endif // PEARL_NETWORK_H

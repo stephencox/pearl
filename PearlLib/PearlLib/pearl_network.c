@@ -69,28 +69,23 @@ PEARL_API void pearl_network_layers_initialise(pearl_network *network)
     }
 }
 
-PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_matrix *input, const pearl_matrix *output)
+PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_tensor *input, const pearl_tensor *output)
 {
-    pearl_matrix **z = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
-    pearl_matrix **a = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
+    pearl_tensor **z = calloc(network->num_layers - 1, sizeof(pearl_tensor *));
+    pearl_tensor **a = calloc(network->num_layers - 1, sizeof(pearl_tensor *));
     // Forward
-    a[0] = pearl_matrix_copy(input);
+    a[0] = pearl_tensor_copy(input);
     for (int i = 1; i < network->num_layers-1; i++) {
         assert(z[i] == NULL);
-        z[i] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-        printf("malloced matrix in z[%d] at %p\n", i, (void *)z[i]);
+        z[i] = pearl_tensor_create(2, input->size[0], network->layers[i].weights->size[0]);
         assert(a[i] == NULL);
-        a[i] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-        printf("malloced matrix in a[%d] at %p\n", i, (void *)a[i]);
+        a[i] = pearl_tensor_create(2, input->size[0], network->layers[i].weights->size[0]);
         pearl_layer_forward(&network->layers[i], a[i-1], z[i], a[i]);
-        printf("Result:");
-        pearl_matrix_print(a[i]);
-        pearl_matrix_print(z[i]);
     }
     // Cost
     double cost = 0.0;
-    pearl_matrix *al = a[network->num_layers - 2];
-    for (int i = 0; i < output->m; i++) {
+    pearl_tensor *al = a[network->num_layers - 2];
+    for (int i = 0; i < output->size[0]; i++) {
         if (output->data[i] > 0.0) {
             cost += log(al->data[i]);
         }
@@ -98,18 +93,18 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_mat
             cost += log(1.0 - al->data[i]);
         }
     }
-    cost /= (double)(-output->n);
+    cost /= (double)(-output->size[1]);
     printf("Loss: %f\n", cost);
 
     //Backward
-    pearl_matrix **dw = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
-    pearl_vector **db = calloc(network->num_layers - 1, sizeof(pearl_vector *));
-    pearl_matrix **dz = calloc(network->num_layers - 1, sizeof(pearl_matrix *));
+    pearl_tensor **dw = calloc(network->num_layers - 1, sizeof(pearl_tensor *));
+    pearl_tensor **db = calloc(network->num_layers - 1, sizeof(pearl_tensor *));
+    pearl_tensor **dz = calloc(network->num_layers - 1, sizeof(pearl_tensor *));
     for (int i = network->num_layers - 1; i > 1; i--) {
         if (i == network->num_layers - 1) {
             assert(dz[i - 1] == NULL);
-            dz[i - 1] = pearl_matrix_create(output->m, output->n);
-            for (int j = 0; j < output->m; j++) {
+            dz[i - 1] = pearl_tensor_create(2, output->size[0], output->size[1]);
+            for (int j = 0; j < output->size[0]; j++) {
                 if (output->data[j] > 0.0) {
                     dz[i - 1]->data[j] = - (output->data[j] / al->data[j]);
                 }
@@ -118,41 +113,28 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_mat
                 }
             }
             assert(dw[i - 1] == NULL);
-            dw[i - 1] = pearl_matrix_create(dz[i-1]->m, a[i-1]->m);
+            dw[i - 1] = pearl_tensor_create(2, dz[i-1]->size[0], a[i-1]->size[0]);
             assert(db[i - 1] == NULL);
-            db[i - 1] = pearl_vector_create(a[i-1]->m);
-            assert(dz[i - 2] == NULL);
-            printf("Going to create dz[%d]\n", i-2);
-            dz[i - 2] = pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1]);
-            printf("Created dz[%d] at %p\n", i-2, (void *)dz[i-2]);
-        }
-        else if (i == 1) {
-            assert(dw[i - 1] == NULL);
-            dw[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
-            assert(db[i - 1] == NULL);
-            db[i - 1] = pearl_vector_create(input->m);
+            db[i - 1] = pearl_tensor_create(1, a[i-1]->size[0]);
             assert(dz[i - 2] == NULL);
             dz[i - 2] = pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1]);
         }
         else {
             assert(dw[i - 1] == NULL);
-            dw[i - 1] = pearl_matrix_create(input->m, network->layers[i].weights->m);
+            dw[i - 1] = pearl_tensor_create(2, input->size[0], network->layers[i].weights->size[0]);
             assert(db[i - 1] == NULL);
-            db[i - 1] = pearl_vector_create(input->m);
+            db[i - 1] = pearl_tensor_create(1, input->size[0]);
             assert(dz[i - 2] == NULL);
             dz[i - 2] = pearl_layer_backward(&network->layers[i], &network->layers[i-1], dz[i - 1], a[i - 1], z[i - 1], dw[i - 1], db[i - 1]);
         }
-        printf("Result:");
-        pearl_matrix_print(z[i - 1]);
     }
     // Clean
     for (int i = 0; i < network->num_layers - 1; i++) {
-        pearl_matrix_destroy(a[i]);
-        pearl_matrix_destroy(z[i]);
-        pearl_matrix_destroy(dw[i]);
-        pearl_vector_destroy(db[i]);
-        printf("Free dz[%d] at %p\n", i, (void *)dz[i]);
-        pearl_matrix_destroy(dz[i]);
+        pearl_tensor_destroy(a[i]);
+        pearl_tensor_destroy(z[i]);
+        pearl_tensor_destroy(dw[i]);
+        pearl_tensor_destroy(db[i]);
+        pearl_tensor_destroy(dz[i]);
     }
     free(a);
     free(z);
