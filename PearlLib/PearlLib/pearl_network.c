@@ -2,12 +2,15 @@
 
 // TODO: Save network in sqlite
 
-PEARL_API pearl_network *pearl_network_create()
+PEARL_API pearl_network *pearl_network_create(int num_input, int num_output)
 {
+    srand((unsigned int)time(NULL));
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
     network->learning_rate = 1e-3;
+    network->num_input = num_input;
+    network->num_output = num_output;
     return network;
 }
 
@@ -40,11 +43,6 @@ PEARL_API void pearl_network_layer_add(pearl_network *network, enum pearl_layer_
     network->layers[network->num_layers - 1].biases = NULL;
 }
 
-PEARL_API void pearl_network_layer_add_input(pearl_network *network, int neurons)
-{
-    pearl_network_layer_add(network, pearl_layer_type_input, neurons, pearl_activation_function_type_linear);
-}
-
 PEARL_API void pearl_network_layer_add_output(pearl_network *network, int neurons, enum pearl_activation_function_type activation_function)
 {
     pearl_network_layer_add(network, pearl_layer_type_output, neurons, activation_function);
@@ -63,9 +61,11 @@ PEARL_API void pearl_network_layer_add_fully_connect(pearl_network *network, int
 
 PEARL_API void pearl_network_layers_initialise(pearl_network *network)
 {
-    srand((unsigned int)time(NULL));
-    for (int i = 1; i < network->num_layers; i++) {
-        pearl_layer_initialise(&network->layers[i], &network->layers[i - 1]);
+    if (network->layers) {
+        pearl_layer_initialise(&network->layers[0], network->num_input);
+        for (int i = 1; i < network->num_layers; i++) {
+            pearl_layer_initialise(&network->layers[i], network->layers[i - 1].neurons);
+        }
     }
 }
 

@@ -9,7 +9,6 @@
 #include <pearl_activation_function.h>
 
 enum pearl_layer_type {
-    pearl_layer_type_input,
     pearl_layer_type_fully_connect,
     pearl_layer_type_dropout,
     pearl_layer_type_output
@@ -24,7 +23,7 @@ typedef struct {
     pearl_tensor *biases;
 } pearl_layer;
 
-void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer);
+void pearl_layer_initialise(pearl_layer *layer, const int num_input);
 void pearl_layer_destroy(pearl_layer *layer);
 void pearl_layer_print(pearl_layer *layer);
 void pearl_layer_forward(pearl_layer *layer, const pearl_tensor *input, pearl_tensor *z, pearl_tensor *a);

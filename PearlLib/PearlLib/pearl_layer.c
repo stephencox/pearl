@@ -1,34 +1,32 @@
 #include <pearl_layer.h>
 
-void pearl_layer_initialise(pearl_layer *layer, const pearl_layer *prev_layer)
+void pearl_layer_initialise(pearl_layer *layer, const int num_input)
 {
     if (layer) {
-        if (prev_layer) {
-            if (layer->biases == NULL) {
-                layer->biases = pearl_tensor_create(1, layer->neurons);
+        if (layer->biases == NULL) {
+            layer->biases = pearl_tensor_create(1, layer->neurons);
+        }
+        if (layer->weights == NULL) {
+            layer->weights = pearl_tensor_create(2, layer->neurons, num_input);
+            double scale = 1.0;
+            //https://arxiv.org/abs/1704.08863
+            switch (layer->activation_function) {
+                case pearl_activation_function_type_linear:
+                    scale = 1.0 / num_input;
+                    break;
+                case pearl_activation_function_type_sigmoid:
+                    scale = 3.6 / sqrt(num_input);
+                    break;
+                case pearl_activation_function_type_tanh:
+                    //scale = 1.0 / sqrt(prev_layer->neurons);
+                    //http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi
+                    scale = sqrt(6.0 / (layer->neurons + num_input));
+                    break;
             }
-            if (layer->weights == NULL) {
-                layer->weights = pearl_tensor_create(2, layer->neurons, prev_layer->neurons);
-                double scale = 1.0;
-                //https://arxiv.org/abs/1704.08863
-                switch (layer->activation_function) {
-                    case pearl_activation_function_type_linear:
-                        scale = 1.0 / prev_layer->neurons;
-                        break;
-                    case pearl_activation_function_type_sigmoid:
-                        scale = 3.6 / sqrt(prev_layer->neurons);
-                        break;
-                    case pearl_activation_function_type_tanh:
-                        //scale = 1.0 / sqrt(prev_layer->neurons);
-                        //http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi
-                        scale = sqrt(6.0 / (layer->neurons + prev_layer->neurons));
-                        break;
-                }
-                for (int i = 0; i < layer->weights->size[0] * layer->weights->size[1]; i++) {
-                    layer->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
-                }
-                pearl_layer_print(layer);
+            for (int i = 0; i < layer->weights->size[0] * layer->weights->size[1]; i++) {
+                layer->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
             }
+            pearl_layer_print(layer);
         }
     }
 }
@@ -51,9 +49,6 @@ void pearl_layer_print(pearl_layer *layer)
         printf("Type: pearl_layer\n");
         printf("Type: ");
         switch (layer->type) {
-            case pearl_layer_type_input:
-                printf("Input");
-                break;
             case pearl_layer_type_fully_connect:
                 printf("Fully connect");
                 break;
