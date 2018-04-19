@@ -169,3 +169,18 @@ pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, 
 
     return dz_prev;
 }
+
+
+void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate)
+{
+    assert(layer->weights->dimension == 2);
+    assert(layer->weights->size[0] == dw->size[0]);
+    assert(layer->weights->size[1] == dw->size[1]);
+    pearl_tensor_print(layer->weights);
+    for (int i = 0; i < layer->weights->size[0]; i++) {
+        for (int j = 0; j < layer->weights->size[1]; j++) {
+            layer->weights->data[ARRAY_IDX_2D(i, j, layer->weights->size[1])] -= learning_rate * dw->data[ARRAY_IDX_2D(i, j, dw->size[1])];
+        }
+    }
+    pearl_tensor_print(layer->weights);
+}
