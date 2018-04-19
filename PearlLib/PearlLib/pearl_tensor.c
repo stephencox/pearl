@@ -43,5 +43,14 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x){
         alloc *= x->size[i];
     }
     result->data = calloc(alloc, sizeof(double));
+
+    int lenght = 1;
+    for(int i=0; i<x->dimension; i++){
+        lenght += x->size[i];
+    }
+
+    for(int i=0; i<lenght; i++){
+        result->data[i] = x->data[i];
+    }
     return result;
 }
