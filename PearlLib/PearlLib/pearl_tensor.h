@@ -18,5 +18,6 @@ typedef struct {
 PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...);
 PEARL_API void pearl_tensor_destroy(pearl_tensor *x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
+PEARL_API void pearl_tensor_print(pearl_tensor *x);
 
 #endif //PEARL_TENSOR_H
