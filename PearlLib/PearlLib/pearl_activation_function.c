@@ -7,6 +7,9 @@ void *pearl_activation_function_pointer(enum pearl_activation_function_type type
         case pearl_activation_function_type_linear:
             activationFunctionPtr = &pearl_activation_function_linear;
             break;
+        case pearl_activation_function_type_relu:
+            activationFunctionPtr = &pearl_activation_function_relu;
+            break;
         case pearl_activation_function_type_tanh:
             activationFunctionPtr = &pearl_activation_function_tanh;
             break;
@@ -27,6 +30,9 @@ void *pearl_activation_function_derivative_pointer(enum pearl_activation_functio
         case pearl_activation_function_type_linear:
             activationFunctionPtr = &pearl_activation_function_derivative_linear;
             break;
+        case pearl_activation_function_type_relu:
+            activationFunctionPtr = &pearl_activation_function_derivative_relu;
+            break;
         case pearl_activation_function_type_tanh:
             activationFunctionPtr = &pearl_activation_function_derivative_tanh;
             break;
@@ -45,6 +51,11 @@ double pearl_activation_function_linear(double input)
     return input;
 }
 
+double pearl_activation_function_relu(double input)
+{
+    return input*(input>0);
+}
+
 double pearl_activation_function_tanh(double input)
 {
     return tanh(input);
@@ -58,6 +69,10 @@ double pearl_activation_function_sigmoid(double input)
 double pearl_activation_function_derivative_linear(double input){
     (void)(input); // Suppress warning
     return 1.0;
+}
+
+double pearl_activation_function_derivative_relu(double input){
+    return input>0;
 }
 
 double pearl_activation_function_derivative_tanh(double input){

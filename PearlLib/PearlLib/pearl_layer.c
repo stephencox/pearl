@@ -14,6 +14,9 @@ void pearl_layer_initialise(pearl_layer *layer, const int num_input)
                 case pearl_activation_function_type_linear:
                     scale = 1.0 / num_input;
                     break;
+                case pearl_activation_function_type_relu:
+                    scale = 1.0 / sqrt(num_input);
+                    break;
                 case pearl_activation_function_type_sigmoid:
                     scale = 3.6 / sqrt(num_input);
                     break;

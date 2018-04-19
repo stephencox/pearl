@@ -5,8 +5,7 @@
 int main()
 {
     pearl_network *network = pearl_network_create(2, 1);
-    pearl_network_layer_add_input(network, 2);
-    pearl_network_layer_add_fully_connect(network, 3, pearl_activation_function_type_tanh);
+    pearl_network_layer_add_fully_connect(network, 3, pearl_activation_function_type_relu);
     pearl_network_layer_add_output(network, 1, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(network);
 
