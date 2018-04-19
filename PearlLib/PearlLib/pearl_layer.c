@@ -86,7 +86,7 @@ void pearl_layer_print(pearl_layer *layer)
 
         printf("Weights:\n");
         if (layer->weights) {
-            //pearl_matrix_print(layer->weights);
+            pearl_tensor_print(layer->weights);
         }
         else {
             printf("None\n");
@@ -94,9 +94,7 @@ void pearl_layer_print(pearl_layer *layer)
 
         printf("Biases: ");
         if (layer->biases) {
-            for (int i = 0; i < layer->biases->size[0]; i++) {
-                printf("%f ", layer->biases->data[i]);
-            }
+            pearl_tensor_print(layer->biases);
         }
         else {
             printf("None");
@@ -112,48 +110,69 @@ void pearl_layer_print(pearl_layer *layer)
 
 void pearl_layer_forward(pearl_layer *layer, const pearl_tensor *input, pearl_tensor *z, pearl_tensor *a)
 {
-    assert(input->size[1] == layer->weights->size[1]);
-    assert(layer->biases->dimension==1);
+    pearl_tensor_print(layer->weights);
+    pearl_tensor_print(layer->biases);
+    pearl_tensor_print(input);
+
+    assert(layer->weights->size[1] == input->size[0]);
+    assert(layer->weights->dimension == 2);
+    assert(layer->biases->dimension == 1);
     assert(layer->weights->size[0] == layer->biases->size[0]);
     double (*activationFunctionPtr)(double) = pearl_activation_function_pointer(layer->activation_function);
 
-    for (int i = 0; i < input->size[0]; i++) {
-        for (int j = 0; j < layer->weights->size[0]; j++) {
-            double sum = 0;
+    for (int i = 0; i < layer->weights->size[0]; i++) {
+        for (int j = 0; j < input->size[1]; j++) {
+            double sum = 0.0;
             for (int k = 0; k < layer->weights->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, input->size[1]) < input->size[0]*input->size[1]);
-                assert(ARRAY_IDX_2D(k, j, layer->weights->size[0]) < layer->weights->size[0]*layer->weights->size[1]);
-                sum += input->data[ARRAY_IDX_2D(i, k, input->size[1])] * layer->weights->data[ARRAY_IDX_2D(k, j, layer->weights->size[0])];
+                assert(ARRAY_IDX_2D(i, k, layer->weights->size[1]) < layer->weights->size[0]*layer->weights->size[1]);
+                assert(ARRAY_IDX_2D(k, j, input->size[1]) < input->size[0]*input->size[1]);
+                sum += layer->weights->data[ARRAY_IDX_2D(i, k, layer->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
             }
-            sum += layer->biases->data[j];
+            sum += layer->biases->data[i];
             assert(ARRAY_IDX_2D(i, j, z->size[1]) < z->size[0]*z->size[1]);
             z->data[ARRAY_IDX_2D(i, j, z->size[1])] = sum;
             assert(ARRAY_IDX_2D(i, j, a->size[1]) < a->size[0]*a->size[1]);
             a->data[ARRAY_IDX_2D(i, j, a->size[1])] = (*activationFunctionPtr)(sum);
         }
     }
+
+    pearl_tensor_print(z);
+    pearl_tensor_print(a);
 }
 
-pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db){
-    double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer->activation_function);
+pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db)
+{
+    pearl_layer_backward_weights_biases(dz, a, dw, db);
+    return pearl_layer_backward_activation(layer, prev_layer, dz, z);
+}
 
-    for (int i = 0; i < a->size[0]; i++) {
-        for (int j = 0; j < dz->size[0]; j++) {
+void pearl_layer_backward_weights_biases(pearl_tensor *dz, pearl_tensor *a, pearl_tensor *dw, pearl_tensor *db)
+{
+    pearl_tensor_print(dz);
+    pearl_tensor_print(dw);
+    pearl_tensor_print(db);
+    for (int i = 0; i < dz->size[0]; i++) {
+        for (int j = 0; j < a->size[0]; j++) {
             double sum_w = 0;
-            double sum_b = 0;
             for (int k = 0; k < dz->size[1]; k++) {
-                assert(ARRAY_IDX_2D(k, j, dz->size[0]) < dz->size[0]*dz->size[1]);
+                printf("Access %d from %d\n", ARRAY_IDX_2D(i, k, dz->size[1]), dz->size[0]*dz->size[1]-1);
                 assert(ARRAY_IDX_2D(i, k, a->size[1]) < a->size[0]*a->size[1]);
-                sum_w += dz->data[ARRAY_IDX_2D(k, j, dz->size[0])] * a->data[ARRAY_IDX_2D(i, k, a->size[1])];
-                sum_b += dz->data[ARRAY_IDX_2D(k, j, dz->size[0])];
+                printf("Access %d from %d\n", ARRAY_IDX_2D(k, j, dz->size[0]), dz->size[0]*dz->size[1]-1);
+                assert(ARRAY_IDX_2D(j, k, a->size[0]) < a->size[0]*a->size[1]);
+                sum_w += dz->data[ARRAY_IDX_2D(i, k, dz->size[1])] * a->data[ARRAY_IDX_2D(j, k, a->size[0])];
+                assert(k < db->size[0]);
+                db->data[k] += dz->data[ARRAY_IDX_2D(i, k, dz->size[1])] / db->size[0];
             }
-            assert(ARRAY_IDX_2D(i, j, dw->size[0]) < dw->size[0]*dw->size[1]);
-            dw->data[ARRAY_IDX_2D(i, j, dw->size[0])] = sum_w/dz->size[0];
-            assert(i < db->size[0]);
-            db->data[i] = sum_b/db->size[0];
+            assert(ARRAY_IDX_2D(i, j, dw->size[1]) < dw->size[0]*dw->size[1]);
+            dw->data[ARRAY_IDX_2D(i, j, dw->size[1])] = sum_w / dz->size[0];
         }
     }
+}
 
+
+pearl_tensor *pearl_layer_backward_activation(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *z)
+{
+    double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer->activation_function);
     pearl_tensor *dz_prev = pearl_tensor_create(2, dz->size[0], layer->weights->size[1]);
     for (int i = 0; i < dz->size[0]; i++) {
         for (int j = 0; j < layer->weights->size[1]; j++) {
@@ -163,7 +182,8 @@ pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, 
                 assert(ARRAY_IDX_2D(k, j, layer->weights->size[1]) < layer->weights->size[0]*layer->weights->size[1]);
                 sum += dz_prev->data[ARRAY_IDX_2D(i, k, dz_prev->size[1])] * layer->weights->data[ARRAY_IDX_2D(k, j, layer->weights->size[1])];
             }
-            dz_prev->data[ARRAY_IDX_2D(i, j, dz_prev->size[1])] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX_2D(i, j, z->size[1])] );
+            printf("Sum=%f\n", sum);
+            dz_prev->data[ARRAY_IDX_2D(i, j, dz_prev->size[1])] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX_2D(i, j, z->size[1])]);
         }
     }
 
