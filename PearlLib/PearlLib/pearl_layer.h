@@ -6,21 +6,22 @@
 #include <math.h>
 #include <pearl_activation_function.h>
 #include <pearl_tensor.h>
-#include <pearl_activation_function.h>
+#include <pearl_version.h>
 
-enum pearl_layer_type {
+typedef enum pearl_layer_type {
     pearl_layer_type_fully_connect,
     pearl_layer_type_dropout,
     pearl_layer_type_output
-};
+} pearl_layer_type;
 
 typedef struct {
-    enum pearl_layer_type type;
-    enum pearl_activation_function_type activation_function;
-    int neurons;
+    pearl_layer_type type;
+    pearl_activation_function_type activation_function;
+    unsigned int neurons;
     double dropout_rate;
     pearl_tensor *weights;
     pearl_tensor *biases;
+    pearl_version version;
 } pearl_layer;
 
 void pearl_layer_initialise(pearl_layer *layer, const int num_input);

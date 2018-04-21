@@ -1,6 +1,6 @@
 #include <pearl_activation_function.h>
 
-void *pearl_activation_function_pointer(enum pearl_activation_function_type type)
+void *pearl_activation_function_pointer(pearl_activation_function_type type)
 {
     double (*activationFunctionPtr)(double);
     switch (type) {
@@ -23,7 +23,7 @@ void *pearl_activation_function_pointer(enum pearl_activation_function_type type
     return activationFunctionPtr;
 }
 
-void *pearl_activation_function_derivative_pointer(enum pearl_activation_function_type type)
+void *pearl_activation_function_derivative_pointer(pearl_activation_function_type type)
 {
     double (*activationFunctionPtr)(double);
     switch (type) {
@@ -53,7 +53,7 @@ double pearl_activation_function_linear(double input)
 
 double pearl_activation_function_relu(double input)
 {
-    return input*(input>0);
+    return input * (input > 0);
 }
 
 double pearl_activation_function_tanh(double input)
@@ -66,19 +66,23 @@ double pearl_activation_function_sigmoid(double input)
     return 1.0 / (1.0 + exp(-input));
 }
 
-double pearl_activation_function_derivative_linear(double input){
+double pearl_activation_function_derivative_linear(double input)
+{
     (void)(input); // Suppress warning
     return 1.0;
 }
 
-double pearl_activation_function_derivative_relu(double input){
-    return input>0;
+double pearl_activation_function_derivative_relu(double input)
+{
+    return input > 0;
 }
 
-double pearl_activation_function_derivative_tanh(double input){
+double pearl_activation_function_derivative_tanh(double input)
+{
     return 1 - pow(pearl_activation_function_tanh(input), 2.0);
 }
 
-double pearl_activation_function_derivative_sigmoid(double input){
-    return pearl_activation_function_sigmoid(input)*pearl_activation_function_sigmoid(1.0-input);
+double pearl_activation_function_derivative_sigmoid(double input)
+{
+    return pearl_activation_function_sigmoid(input) * pearl_activation_function_sigmoid(1.0 - input);
 }

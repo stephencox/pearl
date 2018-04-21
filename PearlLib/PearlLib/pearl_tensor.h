@@ -8,8 +8,8 @@
 #include <pearl_global.h>
 
 typedef struct {
-    int dimension;
-    int *size;
+    unsigned int dimension;
+    unsigned int *size;
     double *data;
 } pearl_tensor;
 
@@ -19,5 +19,6 @@ PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...);
 PEARL_API void pearl_tensor_destroy(pearl_tensor *x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
 PEARL_API void pearl_tensor_print(pearl_tensor *x);
+PEARL_API void pearl_tensor_save(pearl_tensor *x, FILE *f);
 
 #endif //PEARL_TENSOR_H
