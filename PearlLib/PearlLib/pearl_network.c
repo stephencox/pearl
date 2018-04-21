@@ -8,6 +8,7 @@ PEARL_API pearl_network *pearl_network_create(int num_input, int num_output)
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
+    network->loss = pearl_loss_cross_entrypy;
     network->learning_rate = 1e-3;
     network->num_input = num_input;
     network->num_output = num_output;

@@ -6,12 +6,14 @@
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>
 #include <pearl_tensor.h>
+#include <pearl_loss.h>
 #include <time.h>
 
 typedef struct {
     int num_layers;
     pearl_layer *layers;
-    enum pearl_optimiser optimiser;
+    pearl_optimiser optimiser;
+    pearl_loss loss;
     double learning_rate;
     int num_input;
     int num_output;

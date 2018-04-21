@@ -10,7 +10,7 @@ SOURCES += pearl_network.c pearl_layer.c \
     pearl_activation_function.c \
     pearl_tensor.c
 
-HEADERS += pearl_activation_function.h pearl_optimiser.h pearl_network.h pearl_layer.h pearl_global.h pearl_tensor.h
+HEADERS += pearl_activation_function.h pearl_optimiser.h pearl_network.h pearl_layer.h pearl_global.h pearl_tensor.h pearl_loss.h
 
 linux: {
     QMAKE_CFLAGS_RELEASE += -march=native -O3
