@@ -63,7 +63,7 @@ PEARL_API void pearl_network_layers_initialise(pearl_network *network)
 {
     if (network->layers) {
         for (int i = 0; i < network->num_layers; i++) {
-            pearl_layer_initialise(&network->layers[i], i>0 ? network->layers[i - 1].neurons : network->num_input);
+            pearl_layer_initialise(&network->layers[i], i > 0 ? network->layers[i - 1].neurons : network->num_input);
         }
     }
 }
@@ -76,7 +76,7 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
     a[0] = pearl_tensor_create(2, input->size[1], input->size[0]);
     for (int i = 0; i < input->size[0]; i++) {
         for (int j = 0; j < input->size[1]; j++) {
-            a[0]->data[ARRAY_IDX_2D(j,i,a[0]->size[1])] = input->data[ARRAY_IDX_2D(i,j,input->size[1])];
+            a[0]->data[ARRAY_IDX_2D(j, i, a[0]->size[1])] = input->data[ARRAY_IDX_2D(i, j, input->size[1])];
         }
     }
 
@@ -99,7 +99,6 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
             cost += log(1.0 - al->data[i]);
         }
     }
-    pearl_tensor_print(al);
     cost /= (double)(-output->size[1]);
     printf("Loss: %f\n", cost);
 
@@ -111,23 +110,28 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
         if (i == network->num_layers - 1) {
             assert(dz[i] == NULL);
             dz[i] = pearl_tensor_create(2, output->size[1], output->size[0]);
-            for (int j = 0; j < output->size[0]; j++) {
-                for (int x = 0; x < output->size[1]; x++) {
-                    double temp = output->data[ARRAY_IDX_2D(x, j, output->size[0])];
+            for (int j = 0; j < output->size[1]; j++) {
+                for (int x = 0; x < output->size[0]; x++) {
+                    assert(ARRAY_IDX_2D(j, x, output->size[0]) < output->size[0]*output->size[1]);
+                    assert(ARRAY_IDX_2D(j, x, dz[i]->size[1]) < dz[i]->size[0]*dz[i]->size[1]);
+                    assert(ARRAY_IDX_2D(j, x, al->size[1]) < al->size[0]*al->size[1]);
+                    double temp = output->data[ARRAY_IDX_2D(j, x, output->size[0])];
                     if (temp > 0.0) {
-                    dz[i]->data[ARRAY_IDX_2D(j,x,dz[i]->size[0])] = - (output->data[ARRAY_IDX_2D(x,j,output->size[0])] / al->data[ARRAY_IDX_2D(j,x,al->size[1])]);
-                }
-                else {
-                    dz[i]->data[ARRAY_IDX_2D(j,x,dz[i]->size[0])] = - ((1.0 - output->data[ARRAY_IDX_2D(x,j,output->size[0])]) / (1.0 - al->data[ARRAY_IDX_2D(j,x,al->size[1])]));
-                }
+                        dz[i]->data[ARRAY_IDX_2D(j, x, dz[i]->size[1])] = - (output->data[ARRAY_IDX_2D(j, x, output->size[0])] / al->data[ARRAY_IDX_2D(j, x, al->size[1])]);
+                    }
+                    else {
+                        dz[i]->data[ARRAY_IDX_2D(j, x, dz[i]->size[1])] = ((1.0 - output->data[ARRAY_IDX_2D(j, x, output->size[0])]) / (1.0 - al->data[ARRAY_IDX_2D(j, x, al->size[1])]));
+                    }
                 }
             }
+            printf("dZ at output\n");
+            pearl_tensor_print(dz[i]);
         }
-        if(i>0){
+        if (i > 0) {
             assert(dw[i] == NULL);
-            dw[i] = pearl_tensor_create(2, a[i+1]->size[0], dz[i]->size[0]);
+            dw[i] = pearl_tensor_create(2, dz[i]->size[0], a[i]->size[0]);
             assert(db[i] == NULL);
-            db[i] = pearl_tensor_create(1, a[i + 1]->size[0]);
+            db[i] = pearl_tensor_create(1, dz[i]->size[0]);
             assert(dz[i - 1] == NULL);
             dz[i - 1] = pearl_layer_backward(&network->layers[i], &network->layers[i - 1], dz[i], a[i], z[i], dw[i], db[i]);
             pearl_tensor_print(dz[i - 1]);
