@@ -6,7 +6,7 @@ PEARL_API pearl_network *pearl_network_create(unsigned int num_input, unsigned i
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
-    network->loss = pearl_loss_cross_entrypy;
+    network->loss = pearl_loss_binary_cross_entropy;
     network->learning_rate = 1e-3;
     network->num_input = num_input;
     network->num_output = num_output;
@@ -114,17 +114,16 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
         pearl_layer_forward(&network->layers[i], a[i], z[i], a[i + 1]);
     }
     // Cost
-    double cost = 0.0;
     pearl_tensor *al = a[network->num_layers];
-    for (unsigned int i = 0; i < output->size[0]; i++) {
-        if (output->data[i] > 0.0) {
-            cost += log(al->data[i]);
-        }
-        else {
-            cost += log(1.0 - al->data[i]);
-        }
+    double cost = 0.0;
+    switch (network->loss) {
+    case pearl_loss_binary_cross_entropy:
+        cost = pearl_loss_binary_cross_entropy_cost(output, al);
+        break;
+    default:
+        printf("Invalid loss function\n");
+        break;
     }
-    cost /= (double)(-output->size[1]);
     printf("Loss: %f\n", cost);
 
     //Backward
@@ -163,9 +162,9 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
         }
         else {
             assert(dw[i] == NULL);
-            dw[i] = pearl_tensor_create(2, dz[i]->size[0], a[i + 1]->size[0]);
+            dw[i] = pearl_tensor_create(2, dz[i]->size[0], a[i]->size[0]);
             assert(db[i] == NULL);
-            db[i] = pearl_tensor_create(1, a[i + 1]->size[0]);
+            db[i] = pearl_tensor_create(1, dz[i]->size[0]);
             pearl_layer_backward_weights_biases(dz[i], a[i], dw[i], db[i]);
         }
     }
