@@ -34,15 +34,15 @@ void pearl_layer_initialise(pearl_layer *layer, const int num_input)
     }
 }
 
-void pearl_layer_destroy(pearl_layer *layer)
+void pearl_layer_destroy(pearl_layer **layer)
 {
     if (layer) {
-        if (layer) {
-            pearl_tensor_destroy(layer->biases);
+        pearl_tensor_destroy(&((*layer)->biases));
+        if ((*layer)->weights) {
+            pearl_tensor_destroy(&(*layer)->weights);
         }
-        if (layer->weights) {
-            pearl_tensor_destroy(layer->weights);
-        }
+        free(*layer);
+        *layer = NULL;
     }
 }
 

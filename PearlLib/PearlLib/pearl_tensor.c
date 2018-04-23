@@ -18,16 +18,19 @@ PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...)
     return result;
 }
 
-PEARL_API void pearl_tensor_destroy(pearl_tensor *x)
+PEARL_API void pearl_tensor_destroy(pearl_tensor **x)
 {
     if (x) {
-        if (x->size) {
-            free(x->size);
+        if ((*x)->size) {
+            free((*x)->size);
+            (*x)->size = NULL;
         }
-        if (x->data) {
-            free(x->data);
+        if ((*x)->data) {
+            free((*x)->data);
+            (*x)->data = NULL;
         }
-        free(x);
+        free(*x);
+        *x = NULL;
     }
 }
 

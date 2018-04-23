@@ -25,7 +25,7 @@ typedef struct {
 } pearl_layer;
 
 void pearl_layer_initialise(pearl_layer *layer, const int num_input);
-void pearl_layer_destroy(pearl_layer *layer);
+void pearl_layer_destroy(pearl_layer **layer);
 void pearl_layer_print(pearl_layer *layer);
 void pearl_layer_forward(pearl_layer *layer, const pearl_tensor *input, pearl_tensor *z, pearl_tensor *a);
 pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db);

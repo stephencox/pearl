@@ -16,7 +16,7 @@ typedef struct {
 #define ARRAY_IDX_2D(i,j,n) (i*n+j)
 
 PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...);
-PEARL_API void pearl_tensor_destroy(pearl_tensor *x);
+PEARL_API void pearl_tensor_destroy(pearl_tensor **x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
 PEARL_API void pearl_tensor_print(pearl_tensor *x);
 PEARL_API void pearl_tensor_save(pearl_tensor *x, FILE *f);

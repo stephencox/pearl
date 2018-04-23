@@ -17,7 +17,7 @@
 
 typedef struct {
     int num_layers;
-    pearl_layer *layers;
+    pearl_layer **layers;
     pearl_optimiser optimiser;
     pearl_loss loss;
     double learning_rate;
@@ -27,7 +27,7 @@ typedef struct {
 } pearl_network;
 
 PEARL_API pearl_network *pearl_network_create(unsigned int num_input, unsigned int num_output);
-PEARL_API void pearl_network_destroy(pearl_network *network);
+PEARL_API void pearl_network_destroy(pearl_network **network);
 PEARL_API void pearl_network_save(char *filename, pearl_network *network);
 PEARL_API void pearl_network_layer_add(pearl_network *network, pearl_layer_type type, int neurons, pearl_activation_function_type activation_function);
 PEARL_API void pearl_network_layer_add_output(pearl_network *network, int neurons, pearl_activation_function_type activation_function);
