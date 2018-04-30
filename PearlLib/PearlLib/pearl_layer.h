@@ -8,6 +8,10 @@
 #include <pearl_tensor.h>
 #include <pearl_version.h>
 
+#define PEARL_LAYER_VERSION_MAJOR 1
+#define PEARL_LAYER_VERSION_MINOR 0
+#define PEARL_LAYER_VERSION_REVISION 0
+
 typedef enum pearl_layer_type {
     pearl_layer_type_fully_connect,
     pearl_layer_type_dropout,

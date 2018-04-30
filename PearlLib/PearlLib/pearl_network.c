@@ -73,6 +73,10 @@ PEARL_API void pearl_network_layer_add(pearl_network *network, pearl_layer_type 
     layer->activation_function = activation_function;
     layer->weights = NULL;
     layer->biases = NULL;
+    layer->dropout_rate = 0.0;
+    layer->version.major = PEARL_LAYER_VERSION_MAJOR;
+    layer->version.minor = PEARL_LAYER_VERSION_MINOR;
+    layer->version.revision = PEARL_LAYER_VERSION_REVISION;
     network->layers[network->num_layers - 1] = layer;
 }
 

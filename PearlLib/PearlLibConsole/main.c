@@ -26,9 +26,9 @@ int main()
 
     pearl_network_train_epoch(network, input, output);
 
-    pearl_network_destroy(network);
-    pearl_tensor_destroy(input);
-    pearl_tensor_destroy(output);
+    pearl_network_destroy(&network);
+    pearl_tensor_destroy(&input);
+    pearl_tensor_destroy(&output);
 
     return 0;
 }

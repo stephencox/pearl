@@ -1,6 +1,6 @@
 #include <pearl_loss.h>
 
-double pearl_loss_binary_cross_entropy_cost(const pearl_tensor *output, const pearl_tensor *output_prediction)
+PEARL_API double pearl_loss_binary_cross_entropy_cost(const pearl_tensor *output, const pearl_tensor *output_prediction)
 {
     assert(output->dimension == 2);
     assert(output->size[1] == 1);
