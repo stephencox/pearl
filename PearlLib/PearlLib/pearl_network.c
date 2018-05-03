@@ -1,6 +1,6 @@
 #include <pearl_network.h>
 
-PEARL_API pearl_network *pearl_network_create(unsigned int num_input, unsigned int num_output)
+PEARL_API pearl_network *pearl_network_create(const unsigned int num_input, const unsigned int num_output)
 {
     srand((unsigned int)time(NULL));
     pearl_network *network = malloc(sizeof(pearl_network));
@@ -32,7 +32,7 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
     }
 }
 
-PEARL_API void pearl_network_save(char *filename, pearl_network *network)
+PEARL_API void pearl_network_save(const char *filename, const pearl_network *network)
 {
     FILE *f = fopen(filename, "wb");
     if (f == NULL) {
@@ -58,14 +58,15 @@ PEARL_API void pearl_network_save(char *filename, pearl_network *network)
     fclose(f);
 }
 
-PEARL_API void pearl_network_layer_add(pearl_network *network, pearl_layer_type type, int neurons, pearl_activation_function_type activation_function)
+PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_layer_type type, const int neurons, const pearl_activation_function_type activation_function)
 {
-    network->num_layers++;
-    if (network->num_layers > 1) {
-        network->layers = realloc(network->layers, network->num_layers * sizeof(pearl_layer*)); //TODO: error checking
+    pearl_network *network_p = (*network);
+    network_p->num_layers++;
+    if (network_p->num_layers > 1) {
+        network_p->layers = realloc(network_p->layers, network_p->num_layers * sizeof(pearl_layer*)); //TODO: error checking
     }
     else {
-        network->layers = calloc(1, sizeof(pearl_layer*));
+        network_p->layers = calloc(1, sizeof(pearl_layer*));
     }
     pearl_layer *layer = malloc(sizeof(pearl_layer));
     layer->type = type;
@@ -77,38 +78,42 @@ PEARL_API void pearl_network_layer_add(pearl_network *network, pearl_layer_type 
     layer->version.major = PEARL_LAYER_VERSION_MAJOR;
     layer->version.minor = PEARL_LAYER_VERSION_MINOR;
     layer->version.revision = PEARL_LAYER_VERSION_REVISION;
-    network->layers[network->num_layers - 1] = layer;
+    network_p->layers[network_p->num_layers - 1] = layer;
 }
 
-PEARL_API void pearl_network_layer_add_output(pearl_network *network, int neurons, pearl_activation_function_type activation_function)
+PEARL_API void pearl_network_layer_add_output(pearl_network **network, const pearl_activation_function_type activation_function)
 {
-    pearl_network_layer_add(network, pearl_layer_type_output, neurons, activation_function);
+    pearl_network_layer_add(network, pearl_layer_type_output, (*network)->num_output, activation_function);
 }
 
-PEARL_API void pearl_network_layer_add_dropout(pearl_network *network, int neurons, pearl_activation_function_type activation_function, double dropout_rate)
+PEARL_API void pearl_network_layer_add_dropout(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function, const double dropout_rate)
 {
     pearl_network_layer_add(network, pearl_layer_type_dropout, neurons, activation_function);
-    network->layers[network->num_layers - 1]->dropout_rate = dropout_rate;
+    pearl_network *network_p = (*network);
+    network_p->layers[network_p->num_layers - 1]->dropout_rate = dropout_rate;
 }
 
-PEARL_API void pearl_network_layer_add_fully_connect(pearl_network *network, int neurons, pearl_activation_function_type activation_function)
+PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function)
 {
     pearl_network_layer_add(network, pearl_layer_type_fully_connect, neurons, activation_function);
 }
 
-PEARL_API void pearl_network_layers_initialise(pearl_network *network)
+PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 {
-    if (network->layers) {
-        for (int i = 0; i < network->num_layers; i++) {
-            pearl_layer_initialise(network->layers[i], i > 0 ? network->layers[i - 1]->neurons : network->num_input);
+    pearl_network *network_p = (*network);
+    if (network_p->layers) {
+        for (int i = 0; i < network_p->num_layers; i++) {
+            int num_neurons_next_layer = (i < network_p->num_layers-1 ? network_p->layers[i + 1]->neurons : network_p->num_output);
+            pearl_layer_initialise(network_p->layers[i], num_neurons_next_layer);
         }
     }
 }
 
-PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_tensor *input, const pearl_tensor *output)
+PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
 {
-    pearl_tensor **z = calloc(network->num_layers, sizeof(pearl_tensor *));
-    pearl_tensor **a = calloc(network->num_layers + 1, sizeof(pearl_tensor *));
+    pearl_network *network_p = (*network);
+    pearl_tensor **z = calloc(network_p->num_layers, sizeof(pearl_tensor *));
+    pearl_tensor **a = calloc(network_p->num_layers + 1, sizeof(pearl_tensor *));
     // Forward
     a[0] = pearl_tensor_create(2, input->size[1], input->size[0]);
     for (unsigned int i = 0; i < input->size[0]; i++) {
@@ -117,18 +122,18 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
         }
     }
 
-    for (int i = 0; i < network->num_layers; i++) {
+    for (int i = 0; i < network_p->num_layers; i++) {
         printf("Layer %d\n", i);
         assert(z[i] == NULL);
-        z[i] = pearl_tensor_create(2, network->layers[i]->weights->size[0], a[i]->size[1]);
+        z[i] = pearl_tensor_create(2, network_p->layers[i]->weights->size[0], a[i]->size[1]);
         assert(a[i + 1] == NULL);
-        a[i + 1] = pearl_tensor_create(2, network->layers[i]->weights->size[0], a[i]->size[1]);
-        pearl_layer_forward(network->layers[i], a[i], z[i], a[i + 1]);
+        a[i + 1] = pearl_tensor_create(2, network_p->layers[i]->weights->size[0], a[i]->size[1]);
+        pearl_layer_forward(network_p->layers[i], a[i], z[i], a[i + 1]);
     }
     // Cost
-    pearl_tensor *al = a[network->num_layers];
+    pearl_tensor *al = a[network_p->num_layers];
     double cost = 0.0;
-    switch (network->loss) {
+    switch (network_p->loss_type) {
     case pearl_loss_binary_cross_entropy:
         cost = pearl_loss_binary_cross_entropy_cost(output, al);
         break;
@@ -139,11 +144,11 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
     printf("Loss: %f\n", cost);
 
     //Backward
-    pearl_tensor **dw = calloc(network->num_layers, sizeof(pearl_tensor *));
-    pearl_tensor **db = calloc(network->num_layers, sizeof(pearl_tensor *));
-    pearl_tensor **dz = calloc(network->num_layers, sizeof(pearl_tensor *));
-    for (int i = network->num_layers - 1; i >= 0; i--) {
-        if (i == network->num_layers - 1) {
+    pearl_tensor **dw = calloc(network_p->num_layers, sizeof(pearl_tensor *));
+    pearl_tensor **db = calloc(network_p->num_layers, sizeof(pearl_tensor *));
+    pearl_tensor **dz = calloc(network_p->num_layers, sizeof(pearl_tensor *));
+    for (int i = network_p->num_layers - 1; i >= 0; i--) {
+        if (i == network_p->num_layers - 1) {
             assert(dz[i] == NULL);
             dz[i] = pearl_tensor_create(2, output->size[1], output->size[0]);
             for (unsigned int j = 0; j < output->size[1]; j++) {
@@ -169,7 +174,7 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
             assert(db[i] == NULL);
             db[i] = pearl_tensor_create(1, dz[i]->size[0]);
             assert(dz[i - 1] == NULL);
-            dz[i - 1] = pearl_layer_backward(network->layers[i], network->layers[i - 1], dz[i], a[i], z[i], dw[i], db[i]);
+            dz[i - 1] = pearl_layer_backward(network_p->layers[i], network_p->layers[i - 1], dz[i], a[i], z[i], dw[i], db[i]);
             pearl_tensor_print(dz[i - 1]);
         }
         else {
@@ -181,11 +186,11 @@ PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_ten
         }
     }
     //Update
-    for (int i = 0; i < network->num_layers; i++) {
-        pearl_layer_update(network->layers[i], dw[i], db[i], network->learning_rate);
+    for (int i = 0; i < network_p->num_layers; i++) {
+        pearl_layer_update(network_p->layers[i], dw[i], db[i], network_p->learning_rate);
     }
     // Clean
-    for (int i = 0; i < network->num_layers - 1; i++) {
+    for (int i = 0; i < network_p->num_layers - 1; i++) {
         pearl_tensor_destroy(&a[i]);
         pearl_tensor_destroy(&z[i]);
         pearl_tensor_destroy(&dw[i]);

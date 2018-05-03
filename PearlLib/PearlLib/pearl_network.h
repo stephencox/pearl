@@ -26,14 +26,14 @@ typedef struct {
     pearl_version version;
 } pearl_network;
 
-PEARL_API pearl_network *pearl_network_create(unsigned int num_input, unsigned int num_output);
+PEARL_API pearl_network *pearl_network_create(const unsigned int num_input, const unsigned int num_output);
 PEARL_API void pearl_network_destroy(pearl_network **network);
-PEARL_API void pearl_network_save(char *filename, pearl_network *network);
-PEARL_API void pearl_network_layer_add(pearl_network *network, pearl_layer_type type, int neurons, pearl_activation_function_type activation_function);
-PEARL_API void pearl_network_layer_add_output(pearl_network *network, int neurons, pearl_activation_function_type activation_function);
-PEARL_API void pearl_network_layer_add_fully_connect(pearl_network *network, int neurons, pearl_activation_function_type activation_function);
-PEARL_API void pearl_network_layer_add_dropout(pearl_network *network, int neurons, pearl_activation_function_type activation_function, double dropout_rate);
-PEARL_API void pearl_network_layers_initialise(pearl_network *network);
-PEARL_API void pearl_network_train_epoch(pearl_network *network, const pearl_tensor *input, const pearl_tensor *output);
+PEARL_API void pearl_network_save(const char *filename, const pearl_network *network);
+PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_layer_type type, const int neurons, const pearl_activation_function_type activation_function);
+PEARL_API void pearl_network_layer_add_output(pearl_network **network, const pearl_activation_function_type activation_function);
+PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function);
+PEARL_API void pearl_network_layer_add_dropout(pearl_network **network, const int neurons, pearl_activation_function_type activation_function, const double dropout_rate);
+PEARL_API void pearl_network_layers_initialise(pearl_network **network);
+PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output);
 
 #endif // PEARL_NETWORK_H
