@@ -6,7 +6,7 @@ PEARL_API pearl_network *pearl_network_create(unsigned int num_input, unsigned i
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
-    network->loss = pearl_loss_binary_cross_entropy;
+    network->loss_type = pearl_loss_binary_cross_entropy;
     network->learning_rate = 1e-3;
     network->num_input = num_input;
     network->num_output = num_output;
@@ -44,7 +44,7 @@ PEARL_API void pearl_network_save(char *filename, pearl_network *network)
     fwrite(&network->num_output, sizeof(unsigned int), 1, f);
     fwrite(&network->num_layers, sizeof(unsigned int), 1, f);
     fwrite(&network->learning_rate, sizeof(double), 1, f);
-    fwrite(&network->loss, sizeof(pearl_loss), 1, f);
+    fwrite(&network->loss_type, sizeof(pearl_loss), 1, f);
     fwrite(&network->optimiser, sizeof(pearl_optimiser), 1, f);
     for (int i = 0; i < network->num_layers; i++) {
         fwrite(&network->layers[i]->version, sizeof(pearl_version), 1, f);

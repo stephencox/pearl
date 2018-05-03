@@ -19,7 +19,7 @@ typedef struct {
     int num_layers;
     pearl_layer **layers;
     pearl_optimiser optimiser;
-    pearl_loss loss;
+    pearl_loss loss_type;
     double learning_rate;
     unsigned int num_input;
     unsigned int num_output;
