@@ -5,9 +5,9 @@
 int main()
 {
     pearl_network *network = pearl_network_create(2, 1);
-    pearl_network_layer_add_fully_connect(network, 3, pearl_activation_function_type_relu);
-    pearl_network_layer_add_output(network, 1, pearl_activation_function_type_sigmoid);
-    pearl_network_layers_initialise(network);
+    pearl_network_layer_add_fully_connect(&network, 3, pearl_activation_function_type_relu);
+    pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
+    pearl_network_layers_initialise(&network);
 
     pearl_tensor *input = pearl_tensor_create(2,4,2);
     pearl_tensor *output = pearl_tensor_create(2,4,1);
@@ -24,7 +24,7 @@ int main()
         }
     }
 
-    pearl_network_train_epoch(network, input, output);
+    pearl_network_train_epoch(&network, input, output);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
