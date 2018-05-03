@@ -28,13 +28,13 @@ typedef struct {
     pearl_version version;
 } pearl_layer;
 
-void pearl_layer_initialise(pearl_layer *layer, const int num_neurons_next_layer);
+void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_layer);
 void pearl_layer_destroy(pearl_layer **layer);
-void pearl_layer_print(pearl_layer *layer);
-void pearl_layer_forward(pearl_layer *layer, const pearl_tensor *input, pearl_tensor *z, pearl_tensor *a);
-pearl_tensor *pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db);
-void pearl_layer_backward_weights_biases(pearl_tensor *dz, pearl_tensor *a, pearl_tensor *dw, pearl_tensor *db);
-pearl_tensor *pearl_layer_backward_activation(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *z);
+void pearl_layer_print(const pearl_layer *layer);
+void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a);
+void pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db, pearl_tensor **dz_prev);
+void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db);
+void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_layer *prev_layer, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
 
 #endif // PEARL_LAYER_H

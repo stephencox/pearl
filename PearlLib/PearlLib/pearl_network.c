@@ -104,7 +104,7 @@ PEARL_API void pearl_network_layers_initialise(pearl_network **network)
     if (network_p->layers) {
         for (int i = 0; i < network_p->num_layers; i++) {
             int num_neurons_next_layer = (i < network_p->num_layers-1 ? network_p->layers[i + 1]->neurons : network_p->num_output);
-            pearl_layer_initialise(network_p->layers[i], num_neurons_next_layer);
+            pearl_layer_initialise(&network_p->layers[i], num_neurons_next_layer);
         }
     }
 }
@@ -128,7 +128,7 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
         z[i] = pearl_tensor_create(2, network_p->layers[i]->weights->size[0], a[i]->size[1]);
         assert(a[i + 1] == NULL);
         a[i + 1] = pearl_tensor_create(2, network_p->layers[i]->weights->size[0], a[i]->size[1]);
-        pearl_layer_forward(network_p->layers[i], a[i], z[i], a[i + 1]);
+        pearl_layer_forward(&network_p->layers[i], a[i], &z[i], &a[i + 1]);
     }
     // Cost
     pearl_tensor *al = a[network_p->num_layers];
@@ -174,15 +174,15 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
             assert(db[i] == NULL);
             db[i] = pearl_tensor_create(1, dz[i]->size[0]);
             assert(dz[i - 1] == NULL);
-            dz[i - 1] = pearl_layer_backward(network_p->layers[i], network_p->layers[i - 1], dz[i], a[i], z[i], dw[i], db[i]);
-            pearl_tensor_print(dz[i - 1]);
+            dz[i - 1] = pearl_tensor_create(2, network_p->layers[i]->weights->size[1], dz[i]->size[1]);
+            pearl_layer_backward(network_p->layers[i], network_p->layers[i - 1], dz[i], a[i], z[i], dw[i], db[i], &dz[i - 1]);
         }
         else {
             assert(dw[i] == NULL);
             dw[i] = pearl_tensor_create(2, dz[i]->size[0], a[i]->size[0]);
             assert(db[i] == NULL);
             db[i] = pearl_tensor_create(1, dz[i]->size[0]);
-            pearl_layer_backward_weights_biases(dz[i], a[i], dw[i], db[i]);
+            pearl_layer_backward_weights_biases(dz[i], a[i], &dw[i], &db[i]);
         }
     }
     //Update
