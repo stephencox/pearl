@@ -1,35 +1,18 @@
 #include <pearl_layer.h>
 
-void pearl_layer_initialise(pearl_layer *layer, const int num_input)
+void pearl_layer_initialise(pearl_layer *layer, const int num_neurons_next_layer)
 {
     if (layer) {
         if (layer->biases == NULL) {
             layer->biases = pearl_tensor_create(1, layer->neurons);
         }
         if (layer->weights == NULL) {
-            layer->weights = pearl_tensor_create(2, layer->neurons, num_input);
-            double scale = 1.0;
-            //https://arxiv.org/abs/1704.08863
-            switch (layer->activation_function) {
-                case pearl_activation_function_type_linear:
-                    scale = 1.0 / num_input;
-                    break;
-                case pearl_activation_function_type_relu:
-                    scale = 1.0 / sqrt(num_input);
-                    break;
-                case pearl_activation_function_type_sigmoid:
-                    scale = 3.6 / sqrt(num_input);
-                    break;
-                case pearl_activation_function_type_tanh:
-                    //scale = 1.0 / sqrt(prev_layer->neurons);
-                    //http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi
-                    scale = sqrt(6.0 / (layer->neurons + num_input));
-                    break;
-            }
+            layer->weights = pearl_tensor_create(2, num_neurons_next_layer, layer->neurons);
+            //http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi
+            double scale = sqrt(6.0 / (layer->neurons + num_neurons_next_layer));
             for (unsigned int i = 0; i < layer->weights->size[0] * layer->weights->size[1]; i++) {
                 layer->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
             }
-            pearl_layer_print(layer);
         }
     }
 }
