@@ -1,4 +1,4 @@
-image: dismine/docker-valentina
+image: ilssim/cmake-boost-qt5
 pipelines:
   default:
       - step:
