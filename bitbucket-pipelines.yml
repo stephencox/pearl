@@ -15,6 +15,7 @@ pipelines:
             - mkdir build
             - cd build
             - qmake --version
-            - qmake ../PearlLib.pro
+            - qmake ../PearlLib/PearlLib.pro
             - make -j$(nproc)
             - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"PearlLib"
+            - PearlLib/tst_pearllib_network
