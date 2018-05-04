@@ -14,15 +14,14 @@
 
 typedef enum pearl_layer_type {
     pearl_layer_type_fully_connect,
-    pearl_layer_type_dropout,
-    pearl_layer_type_output
+    //pearl_layer_type_dropout
 } pearl_layer_type;
 
 typedef struct {
     pearl_layer_type type;
     pearl_activation_function_type activation_function;
     unsigned int neurons;
-    double dropout_rate;
+    //double dropout_rate;
     pearl_tensor *weights;
     pearl_tensor *biases;
     pearl_version version;
@@ -32,9 +31,9 @@ void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_laye
 void pearl_layer_destroy(pearl_layer **layer);
 void pearl_layer_print(const pearl_layer *layer);
 void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a);
-void pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db, pearl_tensor **dz_prev);
+void pearl_layer_backward(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *a, const pearl_tensor *z, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **dz_prev);
 void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db);
-void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_layer *prev_layer, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
+void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
 
 #endif // PEARL_LAYER_H

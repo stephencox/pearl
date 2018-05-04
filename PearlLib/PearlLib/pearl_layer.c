@@ -21,13 +21,15 @@ void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_laye
 void pearl_layer_destroy(pearl_layer **layer)
 {
     pearl_layer *layer_p = (*layer);
-    if (layer_p) {
-        pearl_tensor_destroy(&(layer_p->biases));
-        if (layer_p->weights) {
+    if (layer_p != NULL) {
+        if (layer_p->biases != NULL) {
+            pearl_tensor_destroy(&layer_p->biases);
+        }
+        if (layer_p->weights != NULL) {
             pearl_tensor_destroy(&layer_p->weights);
         }
-        free(layer);
-        layer = NULL;
+        free(layer_p);
+        layer_p = NULL;
     }
 }
 
@@ -40,12 +42,9 @@ void pearl_layer_print(const pearl_layer *layer)
             case pearl_layer_type_fully_connect:
                 printf("Fully connect");
                 break;
-            case pearl_layer_type_output:
-                printf("Output");
-                break;
-            case pearl_layer_type_dropout:
-                printf("Dropout");
-                break;
+//            case pearl_layer_type_dropout:
+//                printf("Dropout");
+//                break;
             default:
                 printf("None");
                 break;
@@ -121,10 +120,10 @@ void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_t
     }
 }
 
-void pearl_layer_backward(pearl_layer *layer, pearl_layer *prev_layer, pearl_tensor *dz, pearl_tensor *a, pearl_tensor *z, pearl_tensor *dw, pearl_tensor *db, pearl_tensor **dz_prev)
+void pearl_layer_backward(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *a, const pearl_tensor *z, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **dz_prev)
 {
-    pearl_layer_backward_weights_biases(dz, a, &dw, &db);
-    pearl_layer_backward_activation(layer, prev_layer, dz, z, dz_prev);
+    pearl_layer_backward_weights_biases(dz, a, dw, db);
+    pearl_layer_backward_activation(layer, prev_layer_activation, dz, z, dz_prev);
 }
 
 void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db)
@@ -157,10 +156,10 @@ void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_ten
 }
 
 
-void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_layer *prev_layer, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev)
+void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev)
 {
     pearl_tensor *dz_prev_p = (*dz_prev);
-    double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer->activation_function);
+    double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer_activation);
     for (unsigned int i = 0; i < layer->weights->size[1]; i++) {
         for (unsigned int j = 0; j < dz->size[1]; j++) {
             double sum = 0;
