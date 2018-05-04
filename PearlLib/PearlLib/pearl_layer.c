@@ -2,17 +2,16 @@
 
 void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_layer)
 {
-    pearl_layer *layer_p = (*layer);
-    if (layer_p) {
-        if (layer_p->biases == NULL) {
-            layer_p->biases = pearl_tensor_create(1, layer_p->neurons);
+    if (*layer != NULL) {
+        if ((*layer)->biases == NULL) {
+            (*layer)->biases = pearl_tensor_create(1, (*layer)->neurons);
         }
-        if (layer_p->weights == NULL) {
-            layer_p->weights = pearl_tensor_create(2, num_neurons_next_layer, layer_p->neurons);
+        if ((*layer)->weights == NULL) {
+            (*layer)->weights = pearl_tensor_create(2, num_neurons_next_layer, (*layer)->neurons);
             //Glorot, X. & Bengio, Y.. (2010). Understanding the difficulty of training deep feedforward neural networks. Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics, in PMLR 9:249-256
-            double scale = sqrt(6.0 / (layer_p->neurons + num_neurons_next_layer));
-            for (unsigned int i = 0; i < layer_p->weights->size[0] * layer_p->weights->size[1]; i++) {
-                layer_p->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
+            double scale = sqrt(6.0 / ((*layer)->neurons + num_neurons_next_layer));
+            for (unsigned int i = 0; i < (*layer)->weights->size[0] * (*layer)->weights->size[1]; i++) {
+                (*layer)->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
             }
         }
     }
@@ -20,16 +19,15 @@ void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_laye
 
 void pearl_layer_destroy(pearl_layer **layer)
 {
-    pearl_layer *layer_p = (*layer);
-    if (layer_p != NULL) {
-        if (layer_p->biases != NULL) {
-            pearl_tensor_destroy(&layer_p->biases);
+    if (*layer != NULL) {
+        if ((*layer)->biases != NULL) {
+            pearl_tensor_destroy(&(*layer)->biases);
         }
-        if (layer_p->weights != NULL) {
-            pearl_tensor_destroy(&layer_p->weights);
+        if ((*layer)->weights != NULL) {
+            pearl_tensor_destroy(&(*layer)->weights);
         }
-        free(layer_p);
-        layer_p = NULL;
+        free(*layer);
+        *layer = NULL;
     }
 }
 
@@ -94,24 +92,23 @@ void pearl_layer_print(const pearl_layer *layer)
 
 void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a)
 {
-    pearl_layer *layer_p = (*layer);
     pearl_tensor *z_p = (*z);
     pearl_tensor *a_p = (*a);
-    assert(layer_p->weights->size[1] == input->size[0]);
-    assert(layer_p->weights->dimension == 2);
-    assert(layer_p->biases->dimension == 1);
-    assert(layer_p->weights->size[0] == layer_p->biases->size[0]);
-    double (*activationFunctionPtr)(double) = pearl_activation_function_pointer(layer_p->activation_function);
+    assert((*layer)->weights->size[1] == input->size[0]);
+    assert((*layer)->weights->dimension == 2);
+    assert((*layer)->biases->dimension == 1);
+    assert((*layer)->weights->size[0] == (*layer)->biases->size[0]);
+    double (*activationFunctionPtr)(double) = pearl_activation_function_pointer((*layer)->activation_function);
 
-    for (unsigned int i = 0; i < layer_p->weights->size[0]; i++) {
+    for (unsigned int i = 0; i < (*layer)->weights->size[0]; i++) {
         for (unsigned int j = 0; j < input->size[1]; j++) {
             double sum = 0.0;
-            for (unsigned int k = 0; k < layer_p->weights->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, layer_p->weights->size[1]) < layer_p->weights->size[0]*layer_p->weights->size[1]);
+            for (unsigned int k = 0; k < (*layer)->weights->size[1]; k++) {
+                assert(ARRAY_IDX_2D(i, k, (*layer)->weights->size[1]) < (*layer)->weights->size[0]*(*layer)->weights->size[1]);
                 assert(ARRAY_IDX_2D(k, j, input->size[1]) < input->size[0]*input->size[1]);
-                sum += layer_p->weights->data[ARRAY_IDX_2D(i, k, layer_p->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
+                sum += (*layer)->weights->data[ARRAY_IDX_2D(i, k, (*layer)->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
             }
-            sum += layer_p->biases->data[i];
+            sum += (*layer)->biases->data[i];
             assert(ARRAY_IDX_2D(i, j, z_p->size[1]) < z_p->size[0]*z_p->size[1]);
             z_p->data[ARRAY_IDX_2D(i, j, z_p->size[1])] = sum;
             assert(ARRAY_IDX_2D(i, j, a_p->size[1]) < a_p->size[0]*a_p->size[1]);
@@ -158,7 +155,6 @@ void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_ten
 
 void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev)
 {
-    pearl_tensor *dz_prev_p = (*dz_prev);
     double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer(prev_layer_activation);
     for (unsigned int i = 0; i < layer->weights->size[1]; i++) {
         for (unsigned int j = 0; j < dz->size[1]; j++) {
@@ -169,8 +165,8 @@ void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activ
                 sum += layer->weights->data[ARRAY_IDX_2D(j, k, layer->weights->size[0])] * dz->data[ARRAY_IDX_2D(i, k, dz->size[1])];
             }
             assert(ARRAY_IDX_2D(i, j, z->size[1]) < z->size[0]*z->size[1]);
-            assert(ARRAY_IDX_2D(i, j, dz_prev_p->size[1]) < dz_prev_p->size[0]*dz_prev_p->size[1]);
-            dz_prev_p->data[ARRAY_IDX_2D(i, j, dz_prev_p->size[1])] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX_2D(i, j, z->size[1])]);
+            assert(ARRAY_IDX_2D(i, j, (*dz_prev)->size[1]) < (*dz_prev)->size[0]*(*dz_prev)->size[1]);
+            (*dz_prev)->data[ARRAY_IDX_2D(i, j, (*dz_prev)->size[1])] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX_2D(i, j, z->size[1])]);
         }
     }
 }

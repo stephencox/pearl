@@ -12,6 +12,7 @@ class PearlLibTestNetwork : public QObject
     private Q_SLOTS:
         void testCaseCreateNetwork();
         void testCaseAddLayer();
+        void testCaseSaveLoad();
 };
 
 void PearlLibTestNetwork::testCaseCreateNetwork()
@@ -86,6 +87,22 @@ void PearlLibTestNetwork::testCaseAddLayer()
     pearl_network_destroy(&network);
 }
 
+void PearlLibTestNetwork::testCaseSaveLoad()
+{
+    pearl_network *network = pearl_network_create(10, 1);
+    pearl_network_layer_add_fully_connect(&network, 5, pearl_activation_function_type_relu);
+    pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
+    pearl_network_layers_initialise(&network);
+    pearl_network_save("network.bin", network);
+
+    pearl_network *network_load = pearl_network_load("network.bin");
+
+    if (network_load != NULL) {
+        pearl_network_destroy(&network_load);
+    }
+
+    pearl_network_destroy(&network);
+}
 
 
 QTEST_APPLESS_MAIN(PearlLibTestNetwork)

@@ -5,7 +5,7 @@ PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...)
     va_list list;
     pearl_tensor *result = malloc(sizeof(pearl_tensor));
     result->dimension = num_args;
-    result->size = calloc(num_args, sizeof(int));
+    result->size = calloc(num_args, sizeof(unsigned int));
     va_start(list, num_args);
     int alloc = 1;
     for (int i = 0 ; i < num_args; i++) {
@@ -20,18 +20,17 @@ PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...)
 
 PEARL_API void pearl_tensor_destroy(pearl_tensor **x)
 {
-    pearl_tensor *x_p = (*x);
-    if (x_p != NULL) {
-        if (x_p->size != NULL) {
-            free(x_p->size);
-            x_p->size = NULL;
+    if (*x != NULL) {
+        if ((*x)->size != NULL) {
+            free((*x)->size);
+            (*x)->size = NULL;
         }
-        if (x_p->data != NULL) {
-            free(x_p->data);
-            x_p->data = NULL;
+        if ((*x)->data != NULL) {
+            free((*x)->data);
+            (*x)->data = NULL;
         }
-        free(x_p);
-        x_p = NULL;
+        free(*x);
+        *x = NULL;
     }
 }
 
@@ -39,7 +38,7 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
 {
     pearl_tensor *result = malloc(sizeof(pearl_tensor));
     result->dimension = x->dimension;
-    result->size = calloc(x->dimension, sizeof(int));
+    result->size = calloc(x->dimension, sizeof(unsigned int));
     int alloc = 1;
     for (unsigned int i = 0 ; i < x->dimension; i++) {
         result->size[i] = x->size[i];
@@ -58,7 +57,7 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
     return result;
 }
 
-PEARL_API void pearl_tensor_print(pearl_tensor *x)
+PEARL_API void pearl_tensor_print(const pearl_tensor *x)
 {
     switch (x->dimension) {
         case 1:
@@ -82,13 +81,60 @@ PEARL_API void pearl_tensor_print(pearl_tensor *x)
     }
 }
 
-PEARL_API void pearl_tensor_save(pearl_tensor *x, FILE *f)
+PEARL_API void pearl_tensor_save(const pearl_tensor *x, FILE *f)
 {
+    if(f == NULL){
+        fprintf(stderr,"Save error, could not save tensor; file not open!\n");
+        return;
+    }
+    if(x == NULL){
+        fprintf(stderr,"Save error, could not save tensor; tensor is NULL!\n");
+        return;
+    }
     fwrite(&x->dimension, sizeof(unsigned int), 1, f);
     fwrite(&x->size, sizeof(unsigned int), x->dimension, f);
     unsigned int count = 1;
     for (unsigned int i = 0; i < x->dimension; i++) {
-        count += x->size[i];
+        count *= x->size[i];
     }
     fwrite(&x->data, sizeof(double), count, f);
+}
+
+PEARL_API pearl_tensor *pearl_tensor_load(FILE *f){
+    if(f == NULL){
+        return NULL;
+    }
+
+    pearl_tensor *x = malloc(sizeof(pearl_tensor));
+
+    size_t count = 0;
+    count = fread(&x->dimension, sizeof(unsigned int), 1, f);
+    if(count!=1){
+        fprintf(stderr,"Load failed: Error reading tensor dimension!\n");
+        pearl_tensor_destroy(&x);
+        return NULL;
+    }
+    x->size = calloc(x->dimension, sizeof(unsigned int));
+    x->data = NULL;
+
+    count = fread(&x->size, sizeof(unsigned int), x->dimension, f);
+    if(count!=x->dimension){
+        fprintf(stderr,"Load failed: Error reading tensor sizes!\n");
+        pearl_tensor_destroy(&x);
+        return NULL;
+    }
+
+    unsigned int num_data = 1;
+    for (unsigned int i = 0; i < x->dimension; i++) {
+        num_data *= x->size[i];
+    }
+
+    count = fread(&x->data, sizeof(double), num_data, f);
+    if(count!=num_data){
+        fprintf(stderr,"Load failed: Error reading tensor data!\n");
+        pearl_tensor_destroy(&x);
+        return NULL;
+    }
+
+    return x;
 }
