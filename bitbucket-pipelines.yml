@@ -13,4 +13,4 @@ pipelines:
             - qmake ../PearlLib/PearlLib.pro
             - make -j$(nproc)
             - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"PearlLib"
-            - PearlLib/tst_pearllib_network
+            - PearlLibTest/tst_pearllib_network
