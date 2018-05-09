@@ -66,7 +66,7 @@ PEARL_API pearl_network *pearl_network_load(const char *filename){
     }
     pearl_network *network = malloc(sizeof(pearl_network));
     network->layers = NULL;
-    int count = 0;
+    size_t count = 0;
     count = fread(&network->version, sizeof(pearl_version), 1, f);
     if(count!=1){
         fprintf(stderr, "Load failed: Error reading network version!\n");

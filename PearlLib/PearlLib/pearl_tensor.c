@@ -1,6 +1,6 @@
 #include <pearl_tensor.h>
 
-PEARL_API pearl_tensor *pearl_tensor_create(int num_args, ...)
+PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
 {
     va_list list;
     pearl_tensor *result = malloc(sizeof(pearl_tensor));
