@@ -58,6 +58,42 @@ PEARL_API void pearl_network_save(const char *filename, const pearl_network *net
     fclose(f);
 }
 
+PEARL_API void pearl_network_save2(const char *filename, const pearl_network *network)
+{
+    json_object *jobj = json_object_new_object();
+    json_object *jnetwork = json_object_new_array();
+
+    json_object *jversion = json_object_new_array();
+    json_object *jversion_major = json_object_new_int(network->version.major);
+    json_object *jversion_minor = json_object_new_int(network->version.minor);
+    json_object *jversion_revision = json_object_new_int(network->version.revision);
+    json_object_object_add(jversion, "major", jversion_major);
+    json_object_object_add(jversion, "minor", jversion_minor);
+    json_object_object_add(jversion, "revision", jversion_revision);
+    json_object_object_add(jnetwork,"version", jversion);
+
+    json_object_object_add(jobj,"network", jnetwork);
+    json_object_to_file(filename, jobj);
+
+    /*
+    fwrite(&network->num_input, sizeof(unsigned int), 1, f);
+    fwrite(&network->num_output, sizeof(unsigned int), 1, f);
+    fwrite(&network->num_layers, sizeof(unsigned int), 1, f);
+    fwrite(&network->learning_rate, sizeof(double), 1, f);
+    fwrite(&network->loss_type, sizeof(pearl_loss), 1, f);
+    fwrite(&network->optimiser, sizeof(pearl_optimiser), 1, f);
+    for (int i = 0; i < network->num_layers; i++) {
+        fwrite(&network->layers[i]->version, sizeof(pearl_version), 1, f);
+        fwrite(&network->layers[i]->activation_function, sizeof(pearl_activation_function_type), 1, f);
+        //fwrite(&network->layers[i]->dropout_rate, sizeof(double), 1, f);
+        fwrite(&network->layers[i]->neurons, sizeof(unsigned int), 1, f);
+        fwrite(&network->layers[i]->type, sizeof(pearl_layer_type), 1, f);
+        pearl_tensor_save(network->layers[i]->weights, f);
+        pearl_tensor_save(network->layers[i]->biases, f);
+    }
+    */
+}
+
 PEARL_API pearl_network *pearl_network_load(const char *filename){
     FILE *f = fopen(filename, "rb");
     if (f == NULL) {
