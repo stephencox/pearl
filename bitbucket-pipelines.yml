@@ -8,6 +8,7 @@ pipelines:
             - uname -a
             - grep -i processor /proc/cpuinfo | wc -l
             - gcc --version
+            - git submodule update --init --recursive
             - mkdir build
             - cd build
             - qmake --version
