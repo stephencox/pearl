@@ -201,10 +201,10 @@ PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_laye
 {
     (*network)->num_layers++;
     if ((*network)->num_layers > 1) {
-        (*network)->layers = realloc((*network)->layers, (*network)->num_layers * sizeof(pearl_layer*)); //TODO: error checking
+        (*network)->layers = realloc((*network)->layers, (*network)->num_layers * sizeof(pearl_layer *)); //TODO: error checking
     }
     else {
-        (*network)->layers = calloc(1, sizeof(pearl_layer*));
+        (*network)->layers = calloc(1, sizeof(pearl_layer *));
     }
     pearl_layer *layer = malloc(sizeof(pearl_layer));
     layer->type = type;
@@ -240,7 +240,7 @@ PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 {
     if ((*network)->layers != NULL) {
         for (int i = 0; i < (*network)->num_layers; i++) {
-            int num_neurons_next_layer = (i < (*network)->num_layers-1 ? (*network)->layers[i + 1]->neurons : (*network)->num_output);
+            int num_neurons_next_layer = (i < (*network)->num_layers - 1 ? (*network)->layers[i + 1]->neurons : (*network)->num_output);
             pearl_layer_initialise(&(*network)->layers[i], num_neurons_next_layer);
         }
     }
@@ -270,12 +270,12 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
     pearl_tensor *al = a[(*network)->num_layers];
     double cost = 0.0;
     switch ((*network)->loss_type) {
-    case pearl_loss_binary_cross_entropy:
-        cost = pearl_loss_binary_cross_entropy_cost(output, al);
-        break;
-    default:
-        printf("Invalid loss function\n");
-        break;
+        case pearl_loss_binary_cross_entropy:
+            cost = pearl_loss_binary_cross_entropy_cost(output, al);
+            break;
+        default:
+            printf("Invalid loss function\n");
+            break;
     }
     printf("Loss: %f\n", cost);
 

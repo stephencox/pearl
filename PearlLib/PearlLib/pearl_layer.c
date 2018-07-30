@@ -40,9 +40,9 @@ void pearl_layer_print(const pearl_layer *layer)
             case pearl_layer_type_fully_connect:
                 printf("Fully connect");
                 break;
-//            case pearl_layer_type_dropout:
-//                printf("Dropout");
-//                break;
+            //            case pearl_layer_type_dropout:
+            //                printf("Dropout");
+            //                break;
             default:
                 printf("None");
                 break;
@@ -104,7 +104,7 @@ void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_t
         for (unsigned int j = 0; j < input->size[1]; j++) {
             double sum = 0.0;
             for (unsigned int k = 0; k < (*layer)->weights->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, (*layer)->weights->size[1]) < (*layer)->weights->size[0]*(*layer)->weights->size[1]);
+                assert(ARRAY_IDX_2D(i, k, (*layer)->weights->size[1]) < (*layer)->weights->size[0] * (*layer)->weights->size[1]);
                 assert(ARRAY_IDX_2D(k, j, input->size[1]) < input->size[0]*input->size[1]);
                 sum += (*layer)->weights->data[ARRAY_IDX_2D(i, k, (*layer)->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
             }
@@ -165,7 +165,7 @@ void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activ
                 sum += layer->weights->data[ARRAY_IDX_2D(j, k, layer->weights->size[0])] * dz->data[ARRAY_IDX_2D(i, k, dz->size[1])];
             }
             assert(ARRAY_IDX_2D(i, j, z->size[1]) < z->size[0]*z->size[1]);
-            assert(ARRAY_IDX_2D(i, j, (*dz_prev)->size[1]) < (*dz_prev)->size[0]*(*dz_prev)->size[1]);
+            assert(ARRAY_IDX_2D(i, j, (*dz_prev)->size[1]) < (*dz_prev)->size[0] * (*dz_prev)->size[1]);
             (*dz_prev)->data[ARRAY_IDX_2D(i, j, (*dz_prev)->size[1])] = sum * (*activationFunctionDerivativePtr)(z->data[ARRAY_IDX_2D(i, j, z->size[1])]);
         }
     }

@@ -49,12 +49,12 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
     }
     result->data = calloc(alloc, sizeof(double));
 
-    unsigned int lenght = 1;
+    unsigned int num_data = 1;
     for (unsigned int i = 0; i < x->dimension; i++) {
-        lenght += x->size[i];
+        num_data *= x->size[i];
     }
 
-    for (unsigned int i = 0; i < lenght; i++) {
+    for (unsigned int i = 0; i < num_data; i++) {
         result->data[i] = x->data[i];
     }
     return result;
