@@ -18,13 +18,13 @@ typedef enum pearl_layer_type {
 } pearl_layer_type;
 
 typedef struct {
+    pearl_version version;
     pearl_layer_type type;
     pearl_activation_function_type activation_function;
     unsigned int neurons;
     //double dropout_rate;
     pearl_tensor *weights;
     pearl_tensor *biases;
-    pearl_version version;
 } pearl_layer;
 
 void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_layer);
@@ -35,5 +35,6 @@ void pearl_layer_backward(const pearl_layer *layer, const pearl_activation_funct
 void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db);
 void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
+json_object *pearl_layer_to_json(pearl_layer *layer);
 
 #endif // PEARL_LAYER_H

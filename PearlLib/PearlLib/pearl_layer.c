@@ -194,3 +194,21 @@ void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, 
     }
     pearl_tensor_print(layer->weights);
 }
+
+json_object *pearl_layer_to_json(pearl_layer *layer)
+{
+    json_object *json_obj = json_object_new_object();
+    json_object_object_add(json_obj, "version", pearl_version_to_json(layer->version));
+#ifdef ENV64BIT
+    json_object_object_add(json_obj, "activation_function", json_object_new_int64((int)layer->activation_function));
+    json_object_object_add(json_obj, "neurons", json_object_new_int64(layer->neurons));
+    json_object_object_add(json_obj, "type", json_object_new_int64((int)layer->type));
+#else
+    json_object_object_add(json_obj, "activation_function", json_object_new_int((int)layer->activation_function));
+    json_object_object_add(json_obj, "neurons", json_object_new_int(layer->neurons));
+    json_object_object_add(json_obj, "type", json_object_new_int((int)layer->type));
+#endif
+    json_object_object_add(json_obj, "biases", pearl_tensor_to_json(layer->biases));
+    json_object_object_add(json_obj, "weights", pearl_tensor_to_json(layer->weights));
+    return json_obj;
+}

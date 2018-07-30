@@ -84,60 +84,32 @@ PEARL_API void pearl_tensor_print(const pearl_tensor *x)
     }
 }
 
-PEARL_API void pearl_tensor_save(const pearl_tensor *x, FILE *f)
+json_object *pearl_tensor_to_json(pearl_tensor *tensor)
 {
-    if(f == NULL){
-        fprintf(stderr,"Save error, could not save tensor; file not open!\n");
-        return;
+    json_object *json_obj = json_object_new_object();
+    json_object_object_add(json_obj, "version", pearl_version_to_json(tensor->version));
+#ifdef ENV64BIT
+    json_object_object_add(json_obj, "dimension", json_object_new_int64(tensor->dimension));
+#else
+    json_object_object_add(json_obj, "dimension", json_object_new_int(tensor->dimension));
+#endif
+    json_object *json_size = json_object_new_array();
+    for (unsigned int i = 0 ; i < tensor->dimension; i++) {
+#ifdef ENV64BIT
+        json_object_array_add(json_size, json_object_new_int64(tensor->size[i]));
+#else
+        json_object_array_add(json_size, json_object_new_int(tensor->size[i]));
+#endif
     }
-    if(x == NULL){
-        fprintf(stderr,"Save error, could not save tensor; tensor is NULL!\n");
-        return;
-    }
-    fwrite(&x->dimension, sizeof(unsigned int), 1, f);
-    fwrite(&x->size, sizeof(unsigned int), x->dimension, f);
-    unsigned int count = 1;
-    for (unsigned int i = 0; i < x->dimension; i++) {
-        count *= x->size[i];
-    }
-    fwrite(&x->data, sizeof(double), count, f);
-}
-
-PEARL_API pearl_tensor *pearl_tensor_load(FILE *f){
-    if(f == NULL){
-        return NULL;
-    }
-
-    pearl_tensor *x = malloc(sizeof(pearl_tensor));
-
-    size_t count = 0;
-    count = fread(&x->dimension, sizeof(unsigned int), 1, f);
-    if(count!=1){
-        fprintf(stderr,"Load failed: Error reading tensor dimension!\n");
-        pearl_tensor_destroy(&x);
-        return NULL;
-    }
-    x->size = calloc(x->dimension, sizeof(unsigned int));
-    x->data = NULL;
-
-    count = fread(&x->size, sizeof(unsigned int), x->dimension, f);
-    if(count!=x->dimension){
-        fprintf(stderr,"Load failed: Error reading tensor sizes!\n");
-        pearl_tensor_destroy(&x);
-        return NULL;
-    }
-
+    json_object_object_add(json_obj, "size", json_size);
+    json_object *json_data = json_object_new_array();
     unsigned int num_data = 1;
-    for (unsigned int i = 0; i < x->dimension; i++) {
-        num_data *= x->size[i];
+    for (unsigned int i = 0; i < tensor->dimension; i++) {
+        num_data *= tensor->size[i];
     }
-
-    count = fread(&x->data, sizeof(double), num_data, f);
-    if(count!=num_data){
-        fprintf(stderr,"Load failed: Error reading tensor data!\n");
-        pearl_tensor_destroy(&x);
-        return NULL;
+    for (unsigned int i = 0; i < num_data; i++) {
+        json_object_array_add(json_data, json_object_new_double(tensor->data[i]));
     }
-
-    return x;
+    json_object_object_add(json_obj, "data", json_data);
+    return json_obj;
 }

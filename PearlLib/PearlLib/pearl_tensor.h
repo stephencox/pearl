@@ -7,6 +7,8 @@
 #include <stdarg.h>
 #include <pearl_global.h>
 #include <pearl_version.h>
+#include <json.h>
+
 #define PEARL_TENSOR_VERSION_MAJOR 1
 #define PEARL_TENSOR_VERSION_MINOR 0
 #define PEARL_TENSOR_VERSION_REVISION 0
@@ -24,7 +26,6 @@ PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...);
 PEARL_API void pearl_tensor_destroy(pearl_tensor **x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
 PEARL_API void pearl_tensor_print(const pearl_tensor *x);
-PEARL_API void pearl_tensor_save(const pearl_tensor *x, FILE *f);
-PEARL_API pearl_tensor *pearl_tensor_load(FILE *f);
+json_object *pearl_tensor_to_json(pearl_tensor *tensor);
 
 #endif //PEARL_TENSOR_H
