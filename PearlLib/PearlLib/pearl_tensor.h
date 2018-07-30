@@ -6,8 +6,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <pearl_global.h>
+#include <pearl_version.h>
+#define PEARL_TENSOR_VERSION_MAJOR 1
+#define PEARL_TENSOR_VERSION_MINOR 0
+#define PEARL_TENSOR_VERSION_REVISION 0
 
 typedef struct {
+    pearl_version version;
     unsigned int dimension;
     unsigned int *size;
     double *data;
