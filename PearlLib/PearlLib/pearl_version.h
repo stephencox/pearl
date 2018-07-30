@@ -2,9 +2,9 @@
 #define PEARL_VERSION_H
 
 typedef struct {
-    unsigned char major;
-    unsigned char minor;
-    unsigned char revision;
+    unsigned int major;
+    unsigned int minor;
+    unsigned int revision;
 } pearl_version;
 
 #endif // PEARL_VERSION_H
