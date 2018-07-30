@@ -21,7 +21,7 @@ typedef struct {
     pearl_version version;
     pearl_layer_type type;
     pearl_activation_function_type activation_function;
-    unsigned int neurons;
+    unsigned int neurons; //TODO: Rename to num_neurons
     //double dropout_rate;
     pearl_tensor *weights;
     pearl_tensor *biases;
@@ -36,5 +36,6 @@ void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_ten
 void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
 json_object *pearl_layer_to_json(pearl_layer *layer);
+pearl_layer *pearl_layer_from_json(json_object *json);
 
 #endif // PEARL_LAYER_H

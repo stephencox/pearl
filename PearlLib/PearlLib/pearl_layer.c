@@ -199,16 +199,59 @@ json_object *pearl_layer_to_json(pearl_layer *layer)
 {
     json_object *json_obj = json_object_new_object();
     json_object_object_add(json_obj, "version", pearl_version_to_json(layer->version));
-#ifdef ENV64BIT
-    json_object_object_add(json_obj, "activation_function", json_object_new_int64((int)layer->activation_function));
+    json_object_object_add(json_obj, "activation", json_object_new_int64((int)layer->activation_function));
     json_object_object_add(json_obj, "neurons", json_object_new_int64(layer->neurons));
     json_object_object_add(json_obj, "type", json_object_new_int64((int)layer->type));
-#else
-    json_object_object_add(json_obj, "activation_function", json_object_new_int((int)layer->activation_function));
-    json_object_object_add(json_obj, "neurons", json_object_new_int(layer->neurons));
-    json_object_object_add(json_obj, "type", json_object_new_int((int)layer->type));
-#endif
     json_object_object_add(json_obj, "biases", pearl_tensor_to_json(layer->biases));
     json_object_object_add(json_obj, "weights", pearl_tensor_to_json(layer->weights));
     return json_obj;
+}
+
+pearl_layer *pearl_layer_from_json(json_object *json)
+{
+    pearl_layer *layer = malloc(sizeof(pearl_layer));
+
+    json_object *layer_version = json_object_object_get(json, "version");
+    layer->version = pearl_version_from_json(layer_version);
+    // ACTIVATION
+    json_object *layer_activation = json_object_object_get(json, "activation");
+    if(layer_activation==NULL){
+        pearl_layer_destroy(layer);
+        return NULL;
+    }
+    layer->activation_function = (pearl_activation_function_type)json_object_get_int64(layer_activation);
+
+    // NEURONS
+    json_object *layer_neurons = json_object_object_get(json, "neurons");
+    if(layer_neurons==NULL){
+        pearl_layer_destroy(layer);
+        return NULL;
+    }
+    layer->neurons = json_object_get_int64(layer_neurons);
+
+    // TYPE
+    json_object *layer_type = json_object_object_get(json, "type");
+    if(layer_type==NULL){
+        pearl_layer_destroy(layer);
+        return NULL;
+    }
+    layer->type = (pearl_layer_type)json_object_get_int64(layer_type);
+
+    // BIASES
+    json_object *layer_biases = json_object_object_get(json, "biases");
+    if(layer_biases==NULL){
+        pearl_layer_destroy(layer);
+        return NULL;
+    }
+    layer->biases = pearl_tensor_from_json(layer_biases);
+
+    // WEIGHTS
+    json_object *layer_weights = json_object_object_get(json, "weights");
+    if(layer_weights==NULL){
+        pearl_layer_destroy(layer);
+        return NULL;
+    }
+    layer->weights = pearl_tensor_from_json(layer_weights);
+
+    return layer;
 }

@@ -17,7 +17,7 @@
 #define PEARL_NETWORK_VERSION_REVISION 0
 
 typedef struct {
-    int num_layers;
+    unsigned int num_layers;
     pearl_layer **layers;
     pearl_optimiser optimiser;
     pearl_loss loss_type;

@@ -42,7 +42,7 @@ PEARL_API void pearl_network_save(const char *filename, const pearl_network *net
     json_object_object_add(json_obj, "num_output", json_object_new_int64(network->num_output));
     json_object_object_add(json_obj, "num_layers", json_object_new_int64(network->num_layers));
     json_object_object_add(json_obj, "loss_type", json_object_new_int64((int)network->loss_type));
-    json_object_object_add(json_obj, "pearl_optimiser", json_object_new_int64((int)network->optimiser));
+    json_object_object_add(json_obj, "optimiser", json_object_new_int64((int)network->optimiser));
 #else
     json_object_object_add(json_obj, "num_input", json_object_new_int(network->num_input));
     json_object_object_add(json_obj, "num_output", json_object_new_int(network->num_output));
@@ -52,147 +52,88 @@ PEARL_API void pearl_network_save(const char *filename, const pearl_network *net
 #endif
     json_object_object_add(json_obj, "learning_rate", json_object_new_double(network->learning_rate));
     json_object *json_network_layers = json_object_new_array();
-    for (int i = 0; i < network->num_layers; i++) {
+    for (unsigned int i = 0; i < network->num_layers; i++) {
         json_object_array_add(json_network_layers, pearl_layer_to_json(network->layers[i]));
     }
     json_object_object_add(json_obj, "layers",json_network_layers);
     json_object_to_file(filename, json_obj);
+    json_object_put(json_obj);
 }
 
+//TODO: Handle errors in loading
 PEARL_API pearl_network *pearl_network_load(const char *filename)
 {
-    FILE *f = fopen(filename, "rb");
-    if (f == NULL) {
-        fprintf(stderr, "Load failed: Error opening file!\n");
-        return NULL;
-    }
-    pearl_network *network = malloc(sizeof(pearl_network));
-    network->layers = NULL;
-    size_t count = 0;
-    count = fread(&network->version, sizeof(pearl_version), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading network version!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
-        return NULL;
-    }
+    pearl_network *network;
 
-    count = fread(&network->num_input, sizeof(unsigned int), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading num_input!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // VERSION
+    json_object *json_obj = json_object_from_file(filename);
+    json_object *json_network_version = json_object_object_get(json_obj, "version");
+    if(json_network_version == NULL){
         return NULL;
     }
+    pearl_version version = pearl_version_from_json(json_network_version);
 
-    count = fread(&network->num_output, sizeof(unsigned int), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading num_output!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // NUM_INPUT
+    json_object *json_network_num_input = json_object_object_get(json_obj, "num_input");
+    if(json_network_num_input == NULL){
         return NULL;
     }
+    unsigned int num_input = json_object_get_int64(json_network_num_input);
 
-    count = fread(&network->num_layers, sizeof(unsigned int), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading num_layers!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // NUM_OUTPUT
+    json_object *json_network_num_output = json_object_object_get(json_obj, "num_output");
+    if(json_network_num_output == NULL){
         return NULL;
     }
+    unsigned int num_output = json_object_get_int64(json_network_num_output);
 
-    count = fread(&network->learning_rate, sizeof(double), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading learning_rate!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // NUM_LAYERS
+    json_object *json_network_num_layers = json_object_object_get(json_obj, "num_layers");
+    if(json_network_num_layers == NULL){
         return NULL;
     }
+    unsigned int num_layers = json_object_get_int64(json_network_num_layers);
 
-    count = fread(&network->loss_type, sizeof(pearl_loss), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading loss_type!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // LOSS TYPE
+    json_object *json_network_loss_type = json_object_object_get(json_obj, "loss_type");
+    if(json_network_num_layers == NULL){
         return NULL;
     }
+    pearl_loss loss = (pearl_loss)json_object_get_int64(json_network_loss_type);
 
-    count = fread(&network->optimiser, sizeof(pearl_optimiser), 1, f);
-    if(count!=1){
-        fprintf(stderr, "Load failed: Error reading optimiser!\n");
-        pearl_network_destroy(&network);
-        fclose(f);
+    // OPTIMISER
+    json_object *json_network_optimiser = json_object_object_get(json_obj, "optimiser");
+    if(json_network_optimiser == NULL){
+        return NULL;
+    }
+    pearl_optimiser optimiser = (pearl_optimiser)json_object_get_int64(json_network_optimiser);
+
+    // LEARNING RATE
+    json_object *json_network_learning_rate = json_object_object_get(json_obj, "learning_rate");
+    if(json_network_learning_rate == NULL){
+        return NULL;
+    }
+    double learning_rate = json_object_get_double(json_network_learning_rate);
+
+    json_object *json_layer_array = json_object_object_get(json_obj, "layers");
+    if(json_layer_array == NULL){
         return NULL;
     }
 
-    network->layers = calloc(network->num_layers, sizeof(pearl_layer*));
-    for (int i = 0; i < network->num_layers; i++) {
-        network->layers[i] = NULL;
-    }
-
-    for (int i = 0; i < network->num_layers; i++) {
-
-        pearl_layer *layer = malloc(sizeof(pearl_layer));
-        layer->weights = NULL;
-        layer->biases = NULL;
-        count = fread(&layer->version, sizeof(pearl_version), 1, f);
-        if(count!=1){
-            fprintf(stderr, "Load failed: Error reading layer %d version!\n", i+1);
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
+    network = pearl_network_create(num_input, num_output);
+    network->version = version;
+    network->learning_rate = learning_rate;
+    network->loss_type = loss;
+    network->num_layers = num_layers;
+    network->optimiser = optimiser;
+    network->layers = calloc(network->num_layers, sizeof(pearl_layer *));
+    for (unsigned int i = 0; i < network->num_layers; i++) {
+        json_object *json_array = json_object_array_get_idx(json_layer_array, i);
+        if(json_array!= NULL){
+            network->layers[i] = pearl_layer_from_json(json_array);
         }
-
-        count = fread(&layer->activation_function, sizeof(pearl_activation_function_type), 1, f);
-        if(count!=1){
-            fprintf(stderr, "Load failed: Error reading layer %d activation_function!\n", i+1);
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
-        }
-
-        count = fread(&layer->neurons, sizeof(unsigned int), 1, f);
-        if(count!=1){
-            fprintf(stderr, "Load failed: Error reading layer %d neurons!\n", i+1);
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
-        }
-
-        count = fread(&layer->type, sizeof(pearl_layer_type), 1, f);
-        if(count!=1){
-            fprintf(stderr, "Load failed: Error reading layer %d type!\n", i+1);
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
-        }
-
-        layer->weights = pearl_tensor_load(f);
-        if(layer->weights == NULL){
-            fprintf(stderr, "Load failed: Error reading weights!\n");
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
-        }
-
-        layer->biases = pearl_tensor_load(f);
-        if(layer->biases == NULL){
-            fprintf(stderr, "Load failed: Error reading biases!\n");
-            pearl_network_destroy(&network);
-            pearl_layer_destroy(&layer);
-            fclose(f);
-            return NULL;
-        }
-
-        network->layers[i] = layer;
     }
-
-    fclose(f);
+    json_object_put(json_obj);
 
     return network;
 }

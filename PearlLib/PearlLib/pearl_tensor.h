@@ -27,5 +27,6 @@ PEARL_API void pearl_tensor_destroy(pearl_tensor **x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
 PEARL_API void pearl_tensor_print(const pearl_tensor *x);
 json_object *pearl_tensor_to_json(pearl_tensor *tensor);
+pearl_tensor *pearl_tensor_from_json(json_object *json);
 
 #endif //PEARL_TENSOR_H

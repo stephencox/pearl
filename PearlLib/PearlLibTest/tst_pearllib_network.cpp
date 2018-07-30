@@ -93,15 +93,28 @@ void PearlLibTestNetwork::testCaseSaveLoad()
     pearl_network_layer_add_fully_connect(&network, 5, pearl_activation_function_type_relu);
     pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(&network);
-    pearl_network_save("network.bin", network);
-
-    pearl_network *network_load = pearl_network_load("network.bin");
-
-    if (network_load != NULL) {
-        pearl_network_destroy(&network_load);
-    }
-
+    pearl_network_save("network.json", network);
     pearl_network_destroy(&network);
+
+    pearl_network *network_load = pearl_network_load("network.json");
+    QVERIFY(network_load != NULL);
+    QVERIFY(network_load->layers[0]->weights != NULL);
+    QCOMPARE(network_load->layers[0]->weights->dimension, 2);
+    QCOMPARE(network_load->layers[0]->weights->size[0], network_load->num_output);
+    QCOMPARE(network_load->layers[0]->weights->size[1], 5);
+    QVERIFY(network_load->layers[0]->biases != NULL);
+    QCOMPARE(network_load->layers[0]->biases->dimension, 1);
+    QCOMPARE(network_load->layers[0]->biases->size[0], 5);
+
+    QVERIFY(network_load->layers[1]->weights != NULL);
+    QCOMPARE(network_load->layers[1]->weights->dimension, 2);
+    QCOMPARE(network_load->layers[1]->weights->size[0], network_load->num_output);
+    QCOMPARE(network_load->layers[1]->weights->size[1], 1);
+    QVERIFY(network_load->layers[1]->biases != NULL);
+    QCOMPARE(network_load->layers[1]->biases->dimension, 1);
+    QCOMPARE(network_load->layers[1]->biases->size[0], 1);
+
+    pearl_network_destroy(&network_load);
 }
 
 
