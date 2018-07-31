@@ -7,7 +7,6 @@
 #include <pearl_activation_function.h>
 #include <pearl_tensor.h>
 #include <pearl_version.h>
-#include <parson.h>
 
 #define PEARL_LAYER_VERSION_MAJOR 1
 #define PEARL_LAYER_VERSION_MINOR 0
@@ -36,7 +35,5 @@ void pearl_layer_backward(const pearl_layer *layer, const pearl_activation_funct
 void pearl_layer_backward_weights_biases(const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db);
 void pearl_layer_backward_activation(const pearl_layer *layer, const pearl_activation_function_type prev_layer_activation, const pearl_tensor *dz, const pearl_tensor *z, pearl_tensor **dz_prev);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
-JSON_Value *pearl_layer_to_json(pearl_layer *layer);
-pearl_layer *pearl_layer_from_json(JSON_Value *json);
 
 #endif // PEARL_LAYER_H

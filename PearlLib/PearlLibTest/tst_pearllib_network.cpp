@@ -3,6 +3,7 @@
 extern "C"
 {
 #include <pearl_network.h>
+#include <pearl_json.h>
 }
 
 class PearlLibTestNetwork : public QObject

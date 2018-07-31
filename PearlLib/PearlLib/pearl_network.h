@@ -10,7 +10,6 @@
 #include <pearl_loss.h>
 #include <pearl_version.h>
 #include <time.h>
-#include <parson.h>
 
 #define PEARL_NETWORK_VERSION_MAJOR 1
 #define PEARL_NETWORK_VERSION_MINOR 0
@@ -29,8 +28,6 @@ typedef struct {
 
 PEARL_API pearl_network *pearl_network_create(const unsigned int num_input, const unsigned int num_output);
 PEARL_API void pearl_network_destroy(pearl_network **network);
-PEARL_API void pearl_network_save(const char *filename, const pearl_network *network);
-PEARL_API pearl_network *pearl_network_load(const char *filename);
 PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_layer_type type, const int neurons, const pearl_activation_function_type activation_function);
 PEARL_API void pearl_network_layer_add_output(pearl_network **network, const pearl_activation_function_type activation_function);
 PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function);
