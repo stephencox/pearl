@@ -10,7 +10,7 @@
 #include <pearl_loss.h>
 #include <pearl_version.h>
 #include <time.h>
-#include <json.h>
+#include <parson.h>
 
 #define PEARL_NETWORK_VERSION_MAJOR 1
 #define PEARL_NETWORK_VERSION_MINOR 0

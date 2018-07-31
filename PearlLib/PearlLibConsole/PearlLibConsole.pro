@@ -12,7 +12,7 @@ else:unix: LIBS += -L$$OUT_PWD/../PearlLib/ -lPearlLib
 INCLUDEPATH += $$PWD/../PearlLib
 DEPENDPATH += $$PWD/../PearlLib
 
-INCLUDEPATH += ../../external/json-c
+INCLUDEPATH += ../../external/parson
 
 linux: {
     QMAKE_CFLAGS_RELEASE += -march=native

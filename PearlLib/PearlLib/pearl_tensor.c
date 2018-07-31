@@ -84,82 +84,70 @@ PEARL_API void pearl_tensor_print(const pearl_tensor *x)
     }
 }
 
-json_object *pearl_tensor_to_json(pearl_tensor *tensor)
+JSON_Value *pearl_tensor_to_json(pearl_tensor *tensor)
 {
-    json_object *json_obj = json_object_new_object();
-    json_object_object_add(json_obj, "version", pearl_version_to_json(tensor->version));
-    json_object_object_add(json_obj, "dimension", json_object_new_int64(tensor->dimension));
-    json_object *json_size = json_object_new_array();
-    for (unsigned int i = 0 ; i < tensor->dimension; i++) {
-        json_object_array_add(json_size, json_object_new_int64(tensor->size[i]));
-    }
-    json_object_object_add(json_obj, "size", json_size);
-    json_object *json_data = json_object_new_array();
+    JSON_Value *value = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(value);
+    json_object_set_value(obj, "version", pearl_version_to_json(tensor->version));
+    json_object_set_number(obj, "dimension", tensor->dimension);
+    JSON_Value *size = json_value_init_array();
+    JSON_Array *size_array = json_value_get_array(size);
     unsigned int num_data = 1;
-    for (unsigned int i = 0; i < tensor->dimension; i++) {
+    for (unsigned int i = 0 ; i < tensor->dimension; i++) {
+        json_array_append_number(size_array, tensor->size[i]);
         num_data *= tensor->size[i];
     }
+    json_object_set_value(obj, "size", size);
+    JSON_Value *data = json_value_init_array();
+    JSON_Array *data_array = json_value_get_array(data);
     for (unsigned int i = 0; i < num_data; i++) {
-        json_object_array_add(json_data, json_object_new_double(tensor->data[i]));
+        json_array_append_number(data_array, tensor->data[i]);
     }
-    json_object_object_add(json_obj, "data", json_data);
-    return json_obj;
+    json_object_set_value(obj, "data", data);
+    return value;
 }
 
-pearl_tensor *pearl_tensor_from_json(json_object *json)
+pearl_tensor *pearl_tensor_from_json(JSON_Value *json)
 {
+    JSON_Object *obj = json_value_get_object(json);
+    JSON_Object *tensor_version = json_object_get_value(obj, "version");
+    if (tensor_version == NULL) {
+        return NULL;
+    }
     pearl_tensor *tensor = malloc(sizeof(pearl_tensor));
-
-    // VERSION
-    json_object *tensor_version = json_object_object_get(json, "version");
-    if(tensor_version==NULL){
-        pearl_tensor_destroy(&tensor);
-        return NULL;
-    }
     tensor->version = pearl_version_from_json(tensor_version);
-
-    // DIMENSION
-    json_object *tensor_dimension = json_object_object_get(json, "dimension");
-    if(tensor_dimension==NULL){
-        pearl_tensor_destroy(&tensor);
-        return NULL;
-    }
-    tensor->dimension = json_object_get_int64(tensor_dimension);
+    tensor->dimension = json_object_get_number(obj, "dimension");
 
     // SIZE
-    json_object *tensor_size_array = json_object_object_get(json, "size");
-    if(tensor_size_array==NULL){
+    JSON_Value *tensor_size_array = json_object_get_value(obj, "size");
+    if (tensor_size_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;
     }
     tensor->size = calloc(tensor->dimension, sizeof(unsigned int));
     unsigned int num_data = 1;
-    for(unsigned int i = 0; i<tensor->dimension; i++){
-        json_object *item = json_object_array_get_idx(tensor_size_array, i);
-        if(item != NULL){
-            tensor->size[i] = json_object_get_int64(item);
-            num_data *= tensor->size[i];
-        } else {
-            pearl_tensor_destroy(&tensor);
-            return NULL;
-        }
+    JSON_Array *size_array = json_value_get_array(tensor_size_array);
+    if (size_array == NULL) {
+        pearl_tensor_destroy(&tensor);
+        return NULL;
     }
-
-    // DATA
-    json_object *tensor_data_array = json_object_object_get(json, "data");
-    if(tensor_data_array==NULL){
+    for (unsigned int i = 0; i < tensor->dimension; i++) {
+        tensor->size[i] = json_array_get_number(size_array, i);
+        num_data *= tensor->size[i];
+    }
+    JSON_Value *tensor_data_array = json_object_get_value(obj, "data");
+    if (tensor_data_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;
     }
     tensor->data = calloc(num_data, sizeof(double));
-    for(unsigned int i = 0; i<num_data; i++){
-        json_object *item = json_object_array_get_idx(tensor_data_array, i);
-        if(item != NULL){
-            tensor->data[i] = json_object_get_double(item);
-        } else {
-            pearl_tensor_destroy(&tensor);
-            return NULL;
-        }
+    JSON_Array *data_array = json_value_get_array(tensor_data_array);
+    if (data_array == NULL) {
+        pearl_tensor_destroy(&tensor);
+        return NULL;
+    }
+    for (unsigned int i = 0; i < num_data; i++) {
+        tensor->data[i] = json_array_get_number(data_array, i);
     }
 
     return tensor;

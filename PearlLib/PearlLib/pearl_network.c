@@ -21,7 +21,7 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
 {
     if (*network != NULL) {
         if ((*network)->layers != NULL) {
-            for (int i = 0; i < (*network)->num_layers; i++) {
+            for (unsigned int i = 0; i < (*network)->num_layers; i++) {
                 pearl_layer_destroy(&(*network)->layers[i]);
             }
             free((*network)->layers);
@@ -34,106 +34,68 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
 
 PEARL_API void pearl_network_save(const char *filename, const pearl_network *network)
 {
-    json_object *json_obj = json_object_new_object();
-
-    json_object_object_add(json_obj, "version", pearl_version_to_json(network->version));
-#ifdef ENV64BIT
-    json_object_object_add(json_obj, "num_input", json_object_new_int64(network->num_input));
-    json_object_object_add(json_obj, "num_output", json_object_new_int64(network->num_output));
-    json_object_object_add(json_obj, "num_layers", json_object_new_int64(network->num_layers));
-    json_object_object_add(json_obj, "loss_type", json_object_new_int64((int)network->loss_type));
-    json_object_object_add(json_obj, "optimiser", json_object_new_int64((int)network->optimiser));
-#else
-    json_object_object_add(json_obj, "num_input", json_object_new_int(network->num_input));
-    json_object_object_add(json_obj, "num_output", json_object_new_int(network->num_output));
-    json_object_object_add(json_obj, "num_layers", json_object_new_int(network->num_layers));
-    json_object_object_add(json_obj, "loss_type", json_object_new_int((int)network->loss_type));
-    json_object_object_add(json_obj, "pearl_optimiser", json_object_new_int((int)network->optimiser));
-#endif
-    json_object_object_add(json_obj, "learning_rate", json_object_new_double(network->learning_rate));
-    json_object *json_network_layers = json_object_new_array();
+    JSON_Value *root_value = json_value_init_object();
+    JSON_Object *root_object = json_value_get_object(root_value);
+    json_object_set_value(root_object, "version", pearl_version_to_json(network->version));
+    json_object_set_number(root_object, "num_input", network->num_input);
+    json_object_set_number(root_object, "num_output", network->num_output);
+    json_object_set_number(root_object, "num_layers", network->num_layers);
+    json_object_set_number(root_object, "loss_type", (double)network->loss_type);
+    json_object_set_number(root_object, "optimiser", (double)network->optimiser);
+    json_object_set_number(root_object, "learning_rate", network->learning_rate);
+    JSON_Value *layers = json_value_init_array();
+    JSON_Array *layers_array = json_value_get_array(layers);
     for (unsigned int i = 0; i < network->num_layers; i++) {
-        json_object_array_add(json_network_layers, pearl_layer_to_json(network->layers[i]));
+        json_array_append_value(layers_array, pearl_layer_to_json(network->layers[i]));
     }
-    json_object_object_add(json_obj, "layers",json_network_layers);
-    json_object_to_file(filename, json_obj);
-    json_object_put(json_obj);
+    json_object_set_value(root_object, "layers", layers);
+    json_serialize_to_file(root_value, filename);
+    json_value_free(root_value);
 }
 
 //TODO: Handle errors in loading
 PEARL_API pearl_network *pearl_network_load(const char *filename)
 {
     pearl_network *network;
+    JSON_Value *value = json_parse_file(filename);
+    JSON_Object *obj = json_value_get_object(value);
 
     // VERSION
-    json_object *json_obj = json_object_from_file(filename);
-    json_object *json_network_version = json_object_object_get(json_obj, "version");
-    if(json_network_version == NULL){
+    JSON_Value *json_network_version = json_object_get_value(obj, "version");
+    if (json_network_version == NULL) {
         return NULL;
     }
     pearl_version version = pearl_version_from_json(json_network_version);
+    unsigned int num_input = (unsigned int)json_object_get_number(obj, "num_input");
+    unsigned int num_output = (unsigned int)json_object_get_number(obj, "num_output");
+    unsigned int num_layers = (unsigned int)json_object_get_number(obj, "num_layers");
+    pearl_loss loss_type = (pearl_loss)json_object_get_number(obj, "loss_type");
+    pearl_optimiser optimiser = (pearl_optimiser)json_object_get_number(obj, "optimiser");
+    double learning_rate = json_object_get_number(obj, "learning_rate");
 
-    // NUM_INPUT
-    json_object *json_network_num_input = json_object_object_get(json_obj, "num_input");
-    if(json_network_num_input == NULL){
-        return NULL;
-    }
-    unsigned int num_input = json_object_get_int64(json_network_num_input);
-
-    // NUM_OUTPUT
-    json_object *json_network_num_output = json_object_object_get(json_obj, "num_output");
-    if(json_network_num_output == NULL){
-        return NULL;
-    }
-    unsigned int num_output = json_object_get_int64(json_network_num_output);
-
-    // NUM_LAYERS
-    json_object *json_network_num_layers = json_object_object_get(json_obj, "num_layers");
-    if(json_network_num_layers == NULL){
-        return NULL;
-    }
-    unsigned int num_layers = json_object_get_int64(json_network_num_layers);
-
-    // LOSS TYPE
-    json_object *json_network_loss_type = json_object_object_get(json_obj, "loss_type");
-    if(json_network_num_layers == NULL){
-        return NULL;
-    }
-    pearl_loss loss = (pearl_loss)json_object_get_int64(json_network_loss_type);
-
-    // OPTIMISER
-    json_object *json_network_optimiser = json_object_object_get(json_obj, "optimiser");
-    if(json_network_optimiser == NULL){
-        return NULL;
-    }
-    pearl_optimiser optimiser = (pearl_optimiser)json_object_get_int64(json_network_optimiser);
-
-    // LEARNING RATE
-    json_object *json_network_learning_rate = json_object_object_get(json_obj, "learning_rate");
-    if(json_network_learning_rate == NULL){
-        return NULL;
-    }
-    double learning_rate = json_object_get_double(json_network_learning_rate);
-
-    json_object *json_layer_array = json_object_object_get(json_obj, "layers");
-    if(json_layer_array == NULL){
+    JSON_Array *layer_array = json_object_get_array(obj, "layers");
+    if (layer_array == NULL) {
         return NULL;
     }
 
     network = pearl_network_create(num_input, num_output);
     network->version = version;
     network->learning_rate = learning_rate;
-    network->loss_type = loss;
+    network->loss_type = loss_type;
     network->num_layers = num_layers;
     network->optimiser = optimiser;
     network->layers = calloc(network->num_layers, sizeof(pearl_layer *));
     for (unsigned int i = 0; i < network->num_layers; i++) {
-        json_object *json_array = json_object_array_get_idx(json_layer_array, i);
-        if(json_array!= NULL){
-            network->layers[i] = pearl_layer_from_json(json_array);
+        JSON_Value *item = json_array_get_value(layer_array, i);
+        if (item != NULL) {
+            network->layers[i] = pearl_layer_from_json(item);
+        }
+        else {
+            pearl_network_destroy(&network);
+            return NULL;
         }
     }
-    json_object_put(json_obj);
+    json_value_free(value);
 
     return network;
 }
@@ -180,8 +142,8 @@ PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, co
 PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 {
     if ((*network)->layers != NULL) {
-        for (int i = 0; i < (*network)->num_layers; i++) {
-            int num_neurons_next_layer = (i < (*network)->num_layers - 1 ? (*network)->layers[i + 1]->neurons : (*network)->num_output);
+        for (unsigned int i = 0; i < (*network)->num_layers; i++) {
+            unsigned int num_neurons_next_layer = (i < (*network)->num_layers - 1 ? (*network)->layers[i + 1]->neurons : (*network)->num_output);
             pearl_layer_initialise(&(*network)->layers[i], num_neurons_next_layer);
         }
     }
@@ -199,7 +161,7 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
         }
     }
 
-    for (int i = 0; i < (*network)->num_layers; i++) {
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
         printf("Layer %d\n", i);
         assert(z[i] == NULL);
         z[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
@@ -224,7 +186,7 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
     pearl_tensor **dw = calloc((*network)->num_layers, sizeof(pearl_tensor *));
     pearl_tensor **db = calloc((*network)->num_layers, sizeof(pearl_tensor *));
     pearl_tensor **dz = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-    for (int i = (*network)->num_layers - 1; i >= 0; i--) {
+    for (unsigned int i = (*network)->num_layers - 1; i >= 0; i--) {
         if (i == (*network)->num_layers - 1) {
             assert(dz[i] == NULL);
             dz[i] = pearl_tensor_create(2, output->size[1], output->size[0]);
@@ -263,11 +225,11 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
         }
     }
     //Update
-    for (int i = 0; i < (*network)->num_layers; i++) {
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
         pearl_layer_update((*network)->layers[i], dw[i], db[i], (*network)->learning_rate);
     }
     // Clean
-    for (int i = 0; i < (*network)->num_layers - 1; i++) {
+    for (unsigned int i = 0; i < (*network)->num_layers - 1; i++) {
         pearl_tensor_destroy(&a[i]);
         pearl_tensor_destroy(&z[i]);
         pearl_tensor_destroy(&dw[i]);
