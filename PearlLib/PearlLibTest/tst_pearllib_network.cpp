@@ -71,16 +71,16 @@ void PearlLibTestNetwork::testCaseAddLayer()
 
     QVERIFY(network->layers[0]->weights != NULL);
     QCOMPARE(network->layers[0]->weights->dimension, 2);
-    QCOMPARE(network->layers[0]->weights->size[0], network->num_output);
-    QCOMPARE(network->layers[0]->weights->size[1], 5);
+    QCOMPARE(network->layers[0]->weights->size[0], 5);
+    QCOMPARE(network->layers[0]->weights->size[1], 10);
     QVERIFY(network->layers[0]->biases != NULL);
     QCOMPARE(network->layers[0]->biases->dimension, 1);
     QCOMPARE(network->layers[0]->biases->size[0], 5);
 
     QVERIFY(network->layers[1]->weights != NULL);
     QCOMPARE(network->layers[1]->weights->dimension, 2);
-    QCOMPARE(network->layers[1]->weights->size[0], network->num_output);
-    QCOMPARE(network->layers[1]->weights->size[1], 1);
+    QCOMPARE(network->layers[1]->weights->size[0], 1);
+    QCOMPARE(network->layers[1]->weights->size[1], 5);
     QVERIFY(network->layers[1]->biases != NULL);
     QCOMPARE(network->layers[1]->biases->dimension, 1);
     QCOMPARE(network->layers[1]->biases->size[0], 1);
@@ -101,16 +101,16 @@ void PearlLibTestNetwork::testCaseSaveLoad()
     QVERIFY(network_load != NULL);
     QVERIFY(network_load->layers[0]->weights != NULL);
     QCOMPARE(network_load->layers[0]->weights->dimension, 2);
-    QCOMPARE(network_load->layers[0]->weights->size[0], network_load->num_output);
-    QCOMPARE(network_load->layers[0]->weights->size[1], 5);
+    QCOMPARE(network_load->layers[0]->weights->size[0], 5);
+    QCOMPARE(network_load->layers[0]->weights->size[1], 10);
     QVERIFY(network_load->layers[0]->biases != NULL);
     QCOMPARE(network_load->layers[0]->biases->dimension, 1);
     QCOMPARE(network_load->layers[0]->biases->size[0], 5);
 
     QVERIFY(network_load->layers[1]->weights != NULL);
     QCOMPARE(network_load->layers[1]->weights->dimension, 2);
-    QCOMPARE(network_load->layers[1]->weights->size[0], network_load->num_output);
-    QCOMPARE(network_load->layers[1]->weights->size[1], 1);
+    QCOMPARE(network_load->layers[1]->weights->size[0], 1);
+    QCOMPARE(network_load->layers[1]->weights->size[1], 5);
     QVERIFY(network_load->layers[1]->biases != NULL);
     QCOMPARE(network_load->layers[1]->biases->dimension, 1);
     QCOMPARE(network_load->layers[1]->biases->size[0], 1);

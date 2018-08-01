@@ -75,8 +75,8 @@ PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 {
     if ((*network)->layers != NULL) {
         for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-            unsigned int num_neurons_next_layer = (i < (*network)->num_layers - 1 ? (*network)->layers[i + 1]->neurons : (*network)->num_output);
-            pearl_layer_initialise(&(*network)->layers[i], num_neurons_next_layer);
+            unsigned int num_neurons_prev_layer = (i == 0 ? (*network)->num_input : (*network)->layers[i - 1]->neurons);
+            pearl_layer_initialise(&(*network)->layers[i], num_neurons_prev_layer);
         }
     }
 }
@@ -94,7 +94,6 @@ PEARL_API void pearl_network_train_epoch(pearl_network **network, const pearl_te
     }
 
     for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-        printf("Layer %d\n", i);
         assert(z[i] == NULL);
         z[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
         assert(a[i + 1] == NULL);

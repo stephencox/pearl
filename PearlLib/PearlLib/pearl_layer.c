@@ -1,15 +1,15 @@
 #include <pearl_layer.h>
 
-void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_layer)
+void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_prev_layer)
 {
     if (*layer != NULL) {
         if ((*layer)->biases == NULL) {
             (*layer)->biases = pearl_tensor_create(1, (*layer)->neurons);
         }
         if ((*layer)->weights == NULL) {
-            (*layer)->weights = pearl_tensor_create(2, num_neurons_next_layer, (*layer)->neurons);
+            (*layer)->weights = pearl_tensor_create(2, (*layer)->neurons, num_neurons_prev_layer);
             //Glorot, X. & Bengio, Y.. (2010). Understanding the difficulty of training deep feedforward neural networks. Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics, in PMLR 9:249-256
-            double scale = sqrt(6.0 / ((*layer)->neurons + num_neurons_next_layer));
+            double scale = sqrt(6.0 / ((*layer)->neurons + num_neurons_prev_layer));
             for (unsigned int i = 0; i < (*layer)->weights->size[0] * (*layer)->weights->size[1]; i++) {
                 (*layer)->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
             }

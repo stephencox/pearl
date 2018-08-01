@@ -27,7 +27,7 @@ typedef struct {
     pearl_tensor *biases;
 } pearl_layer;
 
-void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_next_layer);
+void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_prev_layer);
 void pearl_layer_destroy(pearl_layer **layer);
 void pearl_layer_print(const pearl_layer *layer);
 void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a);
