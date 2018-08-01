@@ -84,5 +84,6 @@ double pearl_activation_function_derivative_tanh(double input)
 
 double pearl_activation_function_derivative_sigmoid(double input)
 {
-    return pearl_activation_function_sigmoid(input) * pearl_activation_function_sigmoid(1.0 - input);
+    double val = pearl_activation_function_sigmoid(input);
+    return val * (1.0 - val);
 }
