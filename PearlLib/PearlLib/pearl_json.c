@@ -130,7 +130,7 @@ pearl_tensor *pearl_tensor_from_json(JSON_Value *json)
     }
     pearl_tensor *tensor = malloc(sizeof(pearl_tensor));
     tensor->version = pearl_version_from_json(tensor_version);
-    tensor->dimension = json_object_get_number(obj, "dimension");
+    tensor->dimension = (unsigned int)json_object_get_number(obj, "dimension");
     JSON_Value *tensor_size_array = json_object_get_value(obj, "size");
     if (tensor_size_array == NULL) {
         pearl_tensor_destroy(&tensor);
@@ -144,7 +144,7 @@ pearl_tensor *pearl_tensor_from_json(JSON_Value *json)
         return NULL;
     }
     for (unsigned int i = 0; i < tensor->dimension; i++) {
-        tensor->size[i] = json_array_get_number(size_array, i);
+        tensor->size[i] = (unsigned int)json_array_get_number(size_array, i);
         num_data *= tensor->size[i];
     }
     JSON_Value *tensor_data_array = json_object_get_value(obj, "data");
@@ -179,8 +179,8 @@ pearl_version pearl_version_from_json(JSON_Value *json)
 {
     JSON_Object *obj = json_value_get_object(json);
     pearl_version version;
-    version.major = json_object_get_number(obj, "major");
-    version.minor = json_object_get_number(obj, "minor");
-    version.revision = json_object_get_number(obj, "revision");
+    version.major = (unsigned int)json_object_get_number(obj, "major");
+    version.minor = (unsigned int)json_object_get_number(obj, "minor");
+    version.revision = (unsigned int) json_object_get_number(obj, "revision");
     return version;
 }
