@@ -11,7 +11,8 @@ SOURCES += pearl_network.c pearl_layer.c \
     pearl_tensor.c \
     pearl_version.c \
     pearl_loss.c \
-    pearl_json.c
+    pearl_json.c \
+    pearl_util.c
 
 HEADERS += pearl_activation_function.h \
     pearl_optimiser.h \
@@ -21,16 +22,17 @@ HEADERS += pearl_activation_function.h \
     pearl_tensor.h \
     pearl_loss.h \
     pearl_version.h \
-    pearl_json.h
+    pearl_json.h \
+    pearl_util.h
 
 # PARSON
 SOURCES += ../../external/parson/parson.c
 INCLUDEPATH += ../../external/parson
 
 linux: {
-    QMAKE_CFLAGS_RELEASE += -march=native -O3
+    QMAKE_CFLAGS_RELEASE += -march=native
 }
 
 win32: {
-    QMAKE_CFLAGS_RELEASE += -Ox
+    QMAKE_CFLAGS_RELEASE += /arch:AVX2
 }

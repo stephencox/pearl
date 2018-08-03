@@ -7,6 +7,7 @@
 #include <pearl_activation_function.h>
 #include <pearl_tensor.h>
 #include <pearl_version.h>
+#include <pearl_util.h>
 
 #define PEARL_LAYER_VERSION_MAJOR 1
 #define PEARL_LAYER_VERSION_MINOR 0

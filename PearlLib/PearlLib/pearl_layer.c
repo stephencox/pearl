@@ -8,10 +8,9 @@ void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_prev_laye
         }
         if ((*layer)->weights == NULL) {
             (*layer)->weights = pearl_tensor_create(2, (*layer)->neurons, num_neurons_prev_layer);
-            //Glorot, X. & Bengio, Y.. (2010). Understanding the difficulty of training deep feedforward neural networks. Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics, in PMLR 9:249-256
-            double scale = sqrt(6.0 / ((*layer)->neurons + num_neurons_prev_layer));
+            double var = sqrt(2.0 / ((*layer)->neurons + num_neurons_prev_layer));
             for (unsigned int i = 0; i < (*layer)->weights->size[0] * (*layer)->weights->size[1]; i++) {
-                (*layer)->weights->data[i] = -1.0 + ((float)rand() / (float)(RAND_MAX)) * scale * 2.0;
+                (*layer)->weights->data[i] = pearl_util_rand_norm(0.0, var);
             }
         }
     }
