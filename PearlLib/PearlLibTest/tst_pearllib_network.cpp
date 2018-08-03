@@ -125,6 +125,7 @@ void PearlLibTestNetwork::testCaseNetworkForwardCheck()
     pearl_network_layer_add_fully_connect(&network, 3, pearl_activation_function_type_relu);
     pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(&network);
+    network->learning_rate = 0.1;
 
     pearl_tensor *input = pearl_tensor_create(2, 4, 2);
     pearl_tensor *output = pearl_tensor_create(2, 1, 4);
@@ -141,22 +142,51 @@ void PearlLibTestNetwork::testCaseNetworkForwardCheck()
         }
     }
 
-    network->layers[0]->biases->data[0] = 0.11;
-    network->layers[0]->biases->data[1] = 0.12;
-    network->layers[0]->biases->data[2] = 0.13;
-    network->layers[1]->biases->data[0] = 0.14;
+    network->layers[0]->weights->data[0] = -0.2670205687292891;
+    network->layers[0]->weights->data[1] = 0.4848471037990288;
+    network->layers[0]->weights->data[2] = -0.6315295129156053;
+    network->layers[0]->weights->data[3] = -0.7420722005600799;
+    network->layers[0]->weights->data[4] = 1.3681090910152733;
+    network->layers[0]->weights->data[5] = -1.232025382027168;
+    network->layers[1]->weights->data[0] = 0.0733915213686632;
+    network->layers[1]->weights->data[1] = -1.004698165338342;
+    network->layers[1]->weights->data[2] = -0.1679168826901067;
 
-    network->layers[0]->weights->data[0] = 0.21;
-    network->layers[0]->weights->data[1] = 0.22;
-    network->layers[0]->weights->data[2] = 0.23;
-    network->layers[0]->weights->data[3] = 0.24;
-    network->layers[0]->weights->data[4] = 0.25;
-    network->layers[0]->weights->data[5] = 0.26;
-    network->layers[1]->weights->data[0] = 0.15;
-    network->layers[1]->weights->data[1] = 0.16;
-    network->layers[1]->weights->data[2] = 0.17;
+    double loss = pearl_network_train_epoch(&network, input, output);
+    QVERIFY(qAbs(loss - 0.7182439337288026) < 1e-15);
 
-    pearl_network_train_epoch(&network, input, output);
+    QVERIFY(qAbs(network->layers[0]->weights->data[0] + 0.2679348142022225) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[1] - 0.4848339319438247) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[2] + 0.6315295129156053) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[3] + 0.7420722005600799) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[4] - 1.3678618463245154) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[5] + 1.229933624737421) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[0] - 0.0766308057690951) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[1] + 1.004698165338342) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[2] + 0.1505549847294349) < 1e-15);
+
+    QVERIFY(qAbs(network->layers[0]->biases->data[0] + 1.3171855204123333e-5) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->biases->data[1] - 0.0) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->biases->data[2] + 2.4724469075790463e-4) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->biases->data[0] - 0.0012500486106543) < 1e-15);
+
+    loss = pearl_network_train_epoch(&network, input, output);
+    QVERIFY(qAbs(loss - 0.7150801771957616) < 1e-15);
+
+    QVERIFY(qAbs(network->layers[0]->weights->data[0] + 0.2688913302831794) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[1] - 0.4848169107220069) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[2] + 0.6315295129156053) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[3] + 0.7420722005600799) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[4] - 1.3676672556820724) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->weights->data[5] + 1.2280543770573713) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[0] - 0.0798675160482573) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[1] + 1.004698165338342) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->weights->data[2] + 0.1334351602381933) < 1e-15);
+
+    QVERIFY(qAbs(network->layers[0]->biases->data[0] + 3.0193077021853888e-5) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->biases->data[1] - 0.0) < 1e-15);
+    QVERIFY(qAbs(network->layers[0]->biases->data[2] + 4.4183533320092531e-4) < 1e-15);
+    QVERIFY(qAbs(network->layers[1]->biases->data[0] - 0.0022947400840857) < 1e-15);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);

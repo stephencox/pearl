@@ -17,3 +17,7 @@ INCLUDEPATH += ../../external/parson
 linux: {
     QMAKE_CFLAGS_RELEASE += -march=native
 }
+
+win32: {
+    QMAKE_CFLAGS_RELEASE += /arch:AVX2
+}

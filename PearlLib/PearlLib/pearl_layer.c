@@ -116,27 +116,28 @@ void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_t
     }
 }
 
-void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **dz_prev)
+void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dA, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **da_prev)
 {
     pearl_tensor *dw_p = (*dw);
     pearl_tensor *db_p = (*db);
-    pearl_tensor *dz_prev_p = (*dz_prev);
-    assert(dz->dimension == 2);
+    pearl_tensor *da_prev_p = (*da_prev);
+    assert(dA->dimension == 2);
+    assert(dA->dimension == 2);
     assert(a->dimension == 2);
-    assert(dz->size[1] == a->size[1]);
+    assert(dA->size[1] == a->size[1]);
     assert(dw_p->dimension == 2);
-    assert(dw_p->size[0] == dz->size[0]);
+    assert(dw_p->size[0] == dA->size[0]);
     assert(dw_p->size[1] == a->size[0]);
     assert(db_p->dimension == 1);
-    for (unsigned int i = 0; i < dz->size[0]; i++) {
+    for (unsigned int i = 0; i < dA->size[0]; i++) {
         for (unsigned int j = 0; j < a->size[0]; j++) {
             double sum_w = 0.0;
             double sum_b = 0.0;
-            for (unsigned int k = 0; k < dz->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, dz->size[1]) < dz->size[0] * dz->size[1]);
+            for (unsigned int k = 0; k < dA->size[1]; k++) {
+                assert(ARRAY_IDX_2D(i, k, dA->size[1]) < dA->size[0] * dA->size[1]);
                 assert(ARRAY_IDX_2D(j, k, a->size[1]) < a->size[0]*a->size[1]);
-                sum_w += dz->data[ARRAY_IDX_2D(i, k, dz->size[1])] * a->data[ARRAY_IDX_2D(j, k, a->size[1])];
-                sum_b += dz->data[ARRAY_IDX_2D(i, k, dz->size[1])]; //TODO: remove duplicate add
+                sum_w += dA->data[ARRAY_IDX_2D(i, k, dA->size[1])] * a->data[ARRAY_IDX_2D(j, k, a->size[1])];
+                sum_b += dA->data[ARRAY_IDX_2D(i, k, dA->size[1])]; //TODO: remove duplicate add
             }
             assert(ARRAY_IDX_2D(i, j, dw_p->size[1]) < dw_p->size[0]*dw_p->size[1]);
             dw_p->data[ARRAY_IDX_2D(i, j, dw_p->size[1])] = sum_w / a->size[1];
@@ -145,15 +146,15 @@ void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dz, cons
         }
     }
     for (unsigned int i = 0; i < layer->weights->size[1]; i++) {
-        for (unsigned int j = 0; j < dz->size[1]; j++) {
+        for (unsigned int j = 0; j < dA->size[1]; j++) {
             double sum_w = 0.0;
             for (unsigned int k = 0; k < layer->weights->size[0]; k++) {
                 assert(ARRAY_IDX_2D(k, i, layer->weights->size[1]) < layer->weights->size[0] * layer->weights->size[1]);
-                assert(ARRAY_IDX_2D(k, j, dz->size[1]) < dz->size[0]*dz->size[1]);
-                sum_w += layer->weights->data[ARRAY_IDX_2D(k, i, layer->weights->size[1])] * dz->data[ARRAY_IDX_2D(k, j, dz->size[1])];
+                assert(ARRAY_IDX_2D(k, j, dA->size[1]) < dA->size[0]*dA->size[1]);
+                sum_w += layer->weights->data[ARRAY_IDX_2D(k, i, layer->weights->size[1])] * dA->data[ARRAY_IDX_2D(k, j, dA->size[1])];
             }
-            assert(ARRAY_IDX_2D(i, j, dz_prev_p->size[1]) < dz_prev_p->size[0]*dz_prev_p->size[1]);
-            dz_prev_p->data[ARRAY_IDX_2D(i, j, dz_prev_p->size[1])] = sum_w;
+            assert(ARRAY_IDX_2D(i, j, da_prev_p->size[1]) < da_prev_p->size[0]*da_prev_p->size[1]);
+            da_prev_p->data[ARRAY_IDX_2D(i, j, da_prev_p->size[1])] = sum_w;
         }
     }
 }
@@ -167,5 +168,8 @@ void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, 
         for (unsigned int j = 0; j < layer->weights->size[1]; j++) {
             layer->weights->data[ARRAY_IDX_2D(i, j, layer->weights->size[1])] -= learning_rate * dw->data[ARRAY_IDX_2D(i, j, dw->size[1])];
         }
+    }
+    for (unsigned int i = 0; i < layer->biases->size[0]; i++) {
+        layer->biases->data[i] -= learning_rate * db->data[i];
     }
 }
