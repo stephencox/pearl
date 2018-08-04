@@ -2,7 +2,6 @@
 #define PEARL_NETWORK_H
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <pearl_global.h>
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>

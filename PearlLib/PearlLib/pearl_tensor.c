@@ -59,27 +59,3 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
     }
     return result;
 }
-
-PEARL_API void pearl_tensor_print(const pearl_tensor *x)
-{
-    switch (x->dimension) {
-        case 1:
-            printf("Vector of %d units\n", x->size[0]);
-            for (unsigned int i = 0; i < x->size[0]; i++) {
-                printf("%f\n", x->data[i]);
-            }
-            break;
-        case 2:
-            printf("Matrix of %d x %d units\n", x->size[0], x->size[1]);
-            for (unsigned int i = 0; i < x->size[0]; i++) {
-                for (unsigned int j = 0; j < x->size[1]; j++) {
-                    printf("%f ", x->data[ARRAY_IDX_2D(i, j, x->size[1])]);
-                }
-                printf("\n");
-            }
-            break;
-        default:
-            printf("Cannot print tensor of dimension %d\n", x->dimension);
-            break;
-    }
-}

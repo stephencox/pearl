@@ -155,7 +155,7 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         pearl_layer_update((*network)->layers[i], dw[i], db[i], (*network)->learning_rate);
     }
     // Clean
-    for (unsigned int i = 0; i < (*network)->num_layers - 1; i++) {
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
         pearl_tensor_destroy(&a[i]);
         pearl_tensor_destroy(&z[i]);
         pearl_tensor_destroy(&dw[i]);

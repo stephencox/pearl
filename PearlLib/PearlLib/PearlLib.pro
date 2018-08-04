@@ -12,7 +12,8 @@ SOURCES += pearl_network.c pearl_layer.c \
     pearl_version.c \
     pearl_loss.c \
     pearl_json.c \
-    pearl_util.c
+    pearl_util.c \
+    pearl_print.c
 
 HEADERS += pearl_activation_function.h \
     pearl_optimiser.h \
@@ -23,7 +24,8 @@ HEADERS += pearl_activation_function.h \
     pearl_loss.h \
     pearl_version.h \
     pearl_json.h \
-    pearl_util.h
+    pearl_util.h \
+    pearl_print.h
 
 # PARSON
 SOURCES += ../../external/parson/parson.c

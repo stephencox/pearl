@@ -30,65 +30,6 @@ void pearl_layer_destroy(pearl_layer **layer)
     }
 }
 
-void pearl_layer_print(const pearl_layer *layer)
-{
-    if (layer) {
-        printf("Type: pearl_layer\n");
-        printf("Type: ");
-        switch (layer->type) {
-            case pearl_layer_type_fully_connect:
-                printf("Fully connect");
-                break;
-            //            case pearl_layer_type_dropout:
-            //                printf("Dropout");
-            //                break;
-            default:
-                printf("None");
-                break;
-        }
-        printf("\n");
-
-        printf("Activation: ");
-        switch (layer->activation_function) {
-            case pearl_activation_function_type_linear:
-                printf("Linear");
-                break;
-            case pearl_activation_function_type_sigmoid:
-                printf("Sigmoid");
-                break;
-            case pearl_activation_function_type_tanh:
-                printf("Tanh");
-                break;
-            default:
-                printf("None");
-                break;
-        }
-        printf("\n");
-
-        printf("Weights:\n");
-        if (layer->weights) {
-            pearl_tensor_print(layer->weights);
-        }
-        else {
-            printf("None\n");
-        }
-
-        printf("Biases: ");
-        if (layer->biases) {
-            pearl_tensor_print(layer->biases);
-        }
-        else {
-            printf("None");
-        }
-        printf("\n");
-
-    }
-    else {
-        printf("Layer is NULL");
-    }
-    printf("\n");
-}
-
 void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a)
 {
     pearl_tensor *z_p = (*z);
@@ -98,7 +39,6 @@ void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_t
     assert((*layer)->biases->dimension == 1);
     assert((*layer)->weights->size[0] == (*layer)->biases->size[0]);
     double (*activationFunctionPtr)(double) = pearl_activation_function_pointer((*layer)->activation_function);
-
     for (unsigned int i = 0; i < (*layer)->weights->size[0]; i++) {
         for (unsigned int j = 0; j < input->size[1]; j++) {
             double sum = 0.0;

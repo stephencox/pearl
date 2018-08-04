@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <stdio.h>
 #include <stdarg.h>
 #include <pearl_global.h>
 #include <pearl_version.h>
@@ -24,6 +23,5 @@ typedef struct {
 PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...);
 PEARL_API void pearl_tensor_destroy(pearl_tensor **x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
-PEARL_API void pearl_tensor_print(const pearl_tensor *x);
 
 #endif //PEARL_TENSOR_H
