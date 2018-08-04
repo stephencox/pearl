@@ -163,12 +163,14 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         pearl_tensor_destroy(&dA[i]);
         pearl_tensor_destroy(&dZ[i]);
     }
+    pearl_tensor_destroy(&a[(*network)->num_layers]);
     pearl_tensor_destroy(&dA[(*network)->num_layers]);
     free(a);
     free(z);
     free(dw);
     free(db);
     free(dA);
+    free(dZ);
 
     return cost;
 }
