@@ -116,7 +116,9 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
     pearl_tensor **db = calloc((*network)->num_layers, sizeof(pearl_tensor *));
     pearl_tensor **dZ = calloc((*network)->num_layers, sizeof(pearl_tensor *));
     pearl_tensor **dA = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
-    for (int i = (*network)->num_layers - 1; i >= 0; i--) {
+    unsigned int i;
+    for (unsigned int num_layer = (*network)->num_layers; num_layer > 0; num_layer--) {
+        i = num_layer - 1;
         if (i == (*network)->num_layers - 1) {
             assert(dA[i + 1] == NULL);
             dA[i + 1] = pearl_tensor_create(2, output->size[0], output->size[1]);
@@ -131,6 +133,7 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         }
 
         assert(dw[i] == NULL);
+        assert(dA[i + 1] != NULL);
         dw[i] = pearl_tensor_create(2, dA[i + 1]->size[0], a[i]->size[0]);
         assert(db[i] == NULL);
         db[i] = pearl_tensor_create(1, dA[i + 1]->size[0]);
