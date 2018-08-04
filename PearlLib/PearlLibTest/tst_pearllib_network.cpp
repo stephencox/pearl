@@ -95,10 +95,10 @@ void PearlLibTestNetwork::testCaseSaveLoad()
     pearl_network_layer_add_fully_connect(&network, 5, pearl_activation_function_type_relu);
     pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(&network);
-    pearl_network_save("network.json", network);
+    pearl_json_network_serialise("network.json", network);
     pearl_network_destroy(&network);
 
-    pearl_network *network_load = pearl_network_load("network.json");
+    pearl_network *network_load = pearl_json_network_deserialise("network.json");
     QVERIFY(network_load != NULL);
     QVERIFY(network_load->layers[0]->weights != NULL);
     QCOMPARE(network_load->layers[0]->weights->dimension, 2);

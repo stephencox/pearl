@@ -1,6 +1,6 @@
 #include <pearl_print.h>
 
-void pearl_layer_print(const pearl_layer *layer)
+void pearl_print_layer(const pearl_layer *layer)
 {
     if (layer) {
         printf("Type: pearl_layer\n");
@@ -37,7 +37,7 @@ void pearl_layer_print(const pearl_layer *layer)
 
         printf("Weights:\n");
         if (layer->weights) {
-            pearl_tensor_print(layer->weights);
+            pearl_print_tensor(layer->weights);
         }
         else {
             printf("None\n");
@@ -45,7 +45,7 @@ void pearl_layer_print(const pearl_layer *layer)
 
         printf("Biases: ");
         if (layer->biases) {
-            pearl_tensor_print(layer->biases);
+            pearl_print_tensor(layer->biases);
         }
         else {
             printf("None");
@@ -59,7 +59,7 @@ void pearl_layer_print(const pearl_layer *layer)
     printf("\n");
 }
 
-PEARL_API void pearl_tensor_print(const pearl_tensor *x)
+PEARL_API void pearl_print_tensor(const pearl_tensor *x)
 {
     switch (x->dimension) {
         case 1:
