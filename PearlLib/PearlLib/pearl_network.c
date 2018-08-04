@@ -107,8 +107,8 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         case pearl_loss_binary_cross_entropy:
             cost = pearl_loss_binary_cross_entropy_cost(output, al);
             break;
-        default:
-            printf("Invalid loss function\n");
+        case pearl_loss_mean_squared_error:
+            cost = pearl_loss_binary_cross_entropy_cost(output, al);
             break;
     }
     //Backward
