@@ -8,6 +8,7 @@
 #include <pearl_tensor.h>
 #include <pearl_loss.h>
 #include <pearl_version.h>
+#include <math.h>
 #include <time.h>
 
 #define PEARL_NETWORK_VERSION_MAJOR 1
