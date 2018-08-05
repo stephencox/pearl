@@ -33,5 +33,7 @@ PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, co
 //PEARL_API void pearl_network_layer_add_dropout(pearl_network **network, const int neurons, pearl_activation_function_type activation_function, const double dropout_rate);
 PEARL_API void pearl_network_layers_initialise(pearl_network **network);
 PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output);
+void pearl_network_forward(pearl_network **network, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a);
+PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input);
 
 #endif // PEARL_NETWORK_H

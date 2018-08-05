@@ -83,23 +83,11 @@ PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 
 PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
 {
+    // Forward
     pearl_tensor **z = calloc((*network)->num_layers, sizeof(pearl_tensor *));
     pearl_tensor **a = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
-    // Forward
-    a[0] = pearl_tensor_create(2, input->size[1], input->size[0]);
-    for (unsigned int i = 0; i < input->size[0]; i++) {
-        for (unsigned int j = 0; j < input->size[1]; j++) {
-            a[0]->data[ARRAY_IDX_2D(j, i, a[0]->size[1])] = input->data[ARRAY_IDX_2D(i, j, input->size[1])];
-        }
-    }
+    pearl_network_forward(network, input, z, a);
 
-    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-        assert(z[i] == NULL);
-        z[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
-        assert(a[i + 1] == NULL);
-        a[i + 1] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
-        pearl_layer_forward(&(*network)->layers[i], a[i], &z[i], &a[i + 1]);
-    }
     // Cost
     pearl_tensor *al = a[(*network)->num_layers];
     double cost = 0.0;
@@ -176,4 +164,38 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
     free(dZ);
 
     return cost;
+}
+
+void pearl_network_forward(pearl_network **network, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a)
+{
+    a[0] = pearl_tensor_create(2, input->size[1], input->size[0]);
+    for (unsigned int i = 0; i < input->size[0]; i++) {
+        for (unsigned int j = 0; j < input->size[1]; j++) {
+            a[0]->data[ARRAY_IDX_2D(j, i, a[0]->size[1])] = input->data[ARRAY_IDX_2D(i, j, input->size[1])];
+        }
+    }
+
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
+        assert(z[i] == NULL);
+        z[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
+        assert(a[i + 1] == NULL);
+        a[i + 1] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
+        pearl_layer_forward(&(*network)->layers[i], a[i], &z[i], &a[i + 1]);
+    }
+}
+
+PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input)
+{
+    pearl_tensor **z = calloc((*network)->num_layers, sizeof(pearl_tensor *));
+    pearl_tensor **a = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
+    pearl_network_forward(network, input, z, a);
+    pearl_tensor *output = pearl_tensor_copy(a[(*network)->num_layers]);
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
+        pearl_tensor_destroy(&a[i]);
+        pearl_tensor_destroy(&z[i]);
+    }
+    pearl_tensor_destroy(&a[(*network)->num_layers]);
+    free(a);
+    free(z);
+    return output;
 }
