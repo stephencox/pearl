@@ -6,7 +6,7 @@ PEARL_API pearl_network *pearl_network_create(const unsigned int num_input, cons
     pearl_network *network = malloc(sizeof(pearl_network));
     network->num_layers = 0;
     network->optimiser = pearl_optimiser_sgd;
-    network->loss_type = pearl_loss_binary_cross_entropy;
+    network->loss = pearl_loss_create(pearl_loss_binary_cross_entropy);
     network->learning_rate = 1e-3;
     network->num_input = num_input;
     network->num_output = num_output;
@@ -92,7 +92,7 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
 
     // Cost
     pearl_tensor *al = a[(*network)->num_layers];
-    double cost = pearl_loss_cost((*network)->loss_type, output, al);
+    double cost = pearl_loss_cost((*network)->loss, output, al);
 
     //Backward
     pearl_tensor **dw = calloc((*network)->num_layers, sizeof(pearl_tensor *));
@@ -105,21 +105,12 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         if (i == (*network)->num_layers - 1) {
             assert(dA[i + 1] == NULL);
             dA[i + 1] = pearl_tensor_create(2, output->size[0], output->size[1]);
-            double (*loss_func_derivative)(double, double);
-            switch ((*network)->loss_type) {
-                case pearl_loss_binary_cross_entropy:
-                    loss_func_derivative = &pearl_loss_binary_cross_entropy_func_derivative;
-                    break;
-                case pearl_loss_mean_squared_error:
-                    loss_func_derivative = &pearl_loss_mean_squared_error_func_derivative;
-                    break;
-            }
             for (unsigned int j = 0; j < output->size[1]; j++) {
                 for (unsigned int x = 0; x < output->size[0]; x++) {
                     assert(ARRAY_IDX_2D(j, x, output->size[0]) < output->size[0]*output->size[1]);
                     assert(ARRAY_IDX_2D(x, j, dA[i + 1]->size[1]) < dA[i + 1]->size[0]*dA[i + 1]->size[1]);
                     assert(ARRAY_IDX_2D(x, j, al->size[1]) < al->size[0]*al->size[1]);
-                    dA[i + 1]->data[ARRAY_IDX_2D(x, j, dA[i + 1]->size[1])] = - loss_func_derivative(output->data[ARRAY_IDX_2D(j, x, output->size[0])], al->data[ARRAY_IDX_2D(x, j, al->size[1])]);
+                    dA[i + 1]->data[ARRAY_IDX_2D(x, j, dA[i + 1]->size[1])] = - (*network)->loss.calculate_derivative(output->data[ARRAY_IDX_2D(j, x, output->size[0])], al->data[ARRAY_IDX_2D(x, j, al->size[1])]);
                 }
             }
         }

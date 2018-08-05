@@ -38,7 +38,7 @@ PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_ne
     json_object_set_number(root_object, "num_input", network->num_input);
     json_object_set_number(root_object, "num_output", network->num_output);
     json_object_set_number(root_object, "num_layers", network->num_layers);
-    json_object_set_number(root_object, "loss_type", (double)network->loss_type);
+    json_object_set_number(root_object, "loss_type", (double)network->loss.type);
     json_object_set_number(root_object, "optimiser", (double)network->optimiser);
     json_object_set_number(root_object, "learning_rate", network->learning_rate);
     JSON_Value *layers = json_value_init_array();
@@ -67,7 +67,7 @@ PEARL_API pearl_network *pearl_json_network_deserialise(const char *filename)
     unsigned int num_input = (unsigned int)json_object_get_number(obj, "num_input");
     unsigned int num_output = (unsigned int)json_object_get_number(obj, "num_output");
     unsigned int num_layers = (unsigned int)json_object_get_number(obj, "num_layers");
-    pearl_loss loss_type = (pearl_loss)json_object_get_number(obj, "loss_type");
+    pearl_loss_type loss_type = (pearl_loss_type)json_object_get_number(obj, "loss_type");
     pearl_optimiser optimiser = (pearl_optimiser)json_object_get_number(obj, "optimiser");
     double learning_rate = json_object_get_number(obj, "learning_rate");
 
@@ -79,7 +79,7 @@ PEARL_API pearl_network *pearl_json_network_deserialise(const char *filename)
     network = pearl_network_create(num_input, num_output);
     network->version = version;
     network->learning_rate = learning_rate;
-    network->loss_type = loss_type;
+    network->loss = pearl_loss_create(loss_type);
     network->num_layers = num_layers;
     network->optimiser = optimiser;
     network->layers = calloc(network->num_layers, sizeof(pearl_layer *));

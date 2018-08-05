@@ -27,7 +27,7 @@ void PearlLibTestNetwork::testCaseCreateNetwork()
     QCOMPARE(network->num_input, 2);
     QCOMPARE(network->num_output, 1);
     QCOMPARE(network->learning_rate, 1e-3);
-    QCOMPARE(network->loss_type, pearl_loss_binary_cross_entropy);
+    QCOMPARE(network->loss.type, pearl_loss_binary_cross_entropy);
     QCOMPARE(network->optimiser, pearl_optimiser_sgd);
     QCOMPARE(network->version.major, PEARL_NETWORK_VERSION_MAJOR);
     QCOMPARE(network->version.minor, PEARL_NETWORK_VERSION_MINOR);
