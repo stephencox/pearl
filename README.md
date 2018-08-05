@@ -1,12 +1,23 @@
-TODO
-====
+## TODO
 
-* Implement pearl_tensor_print
-* Complete pearl_layer_backward
-* Implement pearl_layer_update
-* Add other optimisation algorithms
+* Add pearl_loss struct containing loss function
+* Review for loops in forward and backward
+* Add batch learning
+* Add pearl_data interface
+* Add metrics
+    * Accuracy
+    * Precision
+    * Recall
+    * f1-score
+    * R2-score
+* Add optimisation algorithms
+    * Adam
+    * Momentum
+    * AdaGrad
 * Add more layer types
-* Add blas functions
-* Add cuda functions
-* Add OpenCL functions
+    * Dropout
+* Add other computational methods
+    * blas
+    * cuda
+    * OpenCL
 
