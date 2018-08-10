@@ -15,7 +15,7 @@ typedef struct {
     double (*calculate_derivative)(double, double);
 } pearl_loss;
 
-pearl_loss pearl_loss_create(pearl_loss_type type);
+PEARL_API pearl_loss pearl_loss_create(pearl_loss_type type);
 double pearl_loss_cost(pearl_loss loss, const pearl_tensor *output, const pearl_tensor *output_prediction);
 double pearl_loss_binary_cross_entropy_func(double out, double pred);
 double pearl_loss_mean_squared_error_func(double out, double pred);

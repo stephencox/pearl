@@ -8,7 +8,7 @@ int main()
     clock_t t1, t2;
     pearl_network *network = pearl_network_create(2, 1);
     pearl_network_layer_add_fully_connect(&network, 1000, pearl_activation_function_type_relu);
-    pearl_network_layer_add_fully_connect(&network, 1000, pearl_activation_function_type_relu);
+    //pearl_network_layer_add_fully_connect(&network, 1000, pearl_activation_function_type_relu);
     pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
     pearl_network_layers_initialise(&network);
     network->learning_rate = 0.1;
@@ -35,11 +35,16 @@ int main()
     }
     t2 = clock();
     long elapsed = ((double)t2 - t1) / CLOCKS_PER_SEC * 1000.0;
-    printf("----------------\n%f (%ld ms)\n----------------\n", loss, elapsed);
+    //pearl_tensor *output_pred = pearl_network_calculate(&network, input);
+    //pearl_tensor_reduce_dimension(&output_pred, 1);
+    //pearl_tensor_reduce_dimension(&output, 1);
+    //double accuracy = pearl_util_accuracy(output, output_pred);
+    printf("----------------\nLoss=%f  Accuracy=%3.2f (%ld ms)\n----------------\n", loss, 0.0, elapsed);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
+    //pearl_tensor_destroy(&output_pred);
 
     return 0;
 }

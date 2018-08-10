@@ -10,9 +10,9 @@ PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
     result->dimension = num_args;
     result->size = calloc(num_args, sizeof(unsigned int));
     va_start(list, num_args);
-    int alloc = 1;
+    unsigned int alloc = 1;
     for (int i = 0 ; i < num_args; i++) {
-        int arg = va_arg(list, int);
+        unsigned int arg = va_arg(list, unsigned int);
         result->size[i] = arg;
         alloc *= arg;
     }
@@ -58,4 +58,17 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
         result->data[i] = x->data[i];
     }
     return result;
+}
+
+PEARL_API void pearl_tensor_reduce_dimension(pearl_tensor **x, const unsigned int dimension)
+{
+    pearl_tensor *x_p = (*x);
+    assert(x_p->dimension == 2);
+    assert(dimension == 1);
+    assert(x_p->size[1] == 1 || x_p->size[0] == 1);
+    x_p->dimension = dimension;
+    if (x_p->size[0] == 1) {
+        x_p->size[0] = x_p->size[1];
+    }
+    x_p->size = realloc(x_p->size, dimension * sizeof(unsigned int));
 }

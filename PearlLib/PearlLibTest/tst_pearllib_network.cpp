@@ -4,6 +4,7 @@ extern "C"
 {
 #include <pearl_network.h>
 #include <pearl_json.h>
+#include <pearl_print.h>
 }
 
 class PearlLibTestNetwork : public QObject
@@ -15,6 +16,8 @@ class PearlLibTestNetwork : public QObject
         void testCaseAddLayer();
         void testCaseSaveLoad();
         void testCaseNetworkForwardCheck();
+        void testCaseNetworkClassification();
+        void testCaseNetworkRegression();
 };
 
 void PearlLibTestNetwork::testCaseCreateNetwork()
@@ -191,6 +194,50 @@ void PearlLibTestNetwork::testCaseNetworkForwardCheck()
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
+}
+
+void PearlLibTestNetwork::testCaseNetworkClassification()
+{
+
+}
+
+void PearlLibTestNetwork::testCaseNetworkRegression()
+{
+    pearl_network *network = pearl_network_create(2, 1);
+    pearl_network_layer_add_fully_connect(&network, 3, pearl_activation_function_type_relu);
+    pearl_network_layer_add_output(&network, pearl_activation_function_type_linear);
+    pearl_network_layers_initialise(&network);
+    network->learning_rate = 0.1;
+    network->loss = pearl_loss_create(pearl_loss_mean_squared_error);
+
+    pearl_tensor *input = pearl_tensor_create(2, 100, 2);
+    pearl_tensor *output = pearl_tensor_create(2, 1, 100);
+    int counter_in = 0, counter_out = 0;
+    double min = -5.0;
+    double max = 5.0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            double a = min + (rand() / (RAND_MAX / (max - min)));
+            double b = min + (rand() / (RAND_MAX / (max - min)));
+            input->data[counter_in] = a;
+            input->data[counter_in + 1] = b;
+            output->data[counter_out] = pow(a, 2) + b;
+            counter_in += 2;
+            counter_out++;
+        }
+    }
+
+    double loss;
+    for (int i = 0; i < 1000; i++) {
+        loss = pearl_network_train_epoch(&network, input, output);
+    }
+    printf("MSE Loss = %0.16f\n", loss);
+    pearl_tensor *pred = pearl_network_calculate(&network, input);
+
+    pearl_network_destroy(&network);
+    pearl_tensor_destroy(&input);
+    pearl_tensor_destroy(&output);
+    pearl_tensor_destroy(&pred);
 }
 
 QTEST_APPLESS_MAIN(PearlLibTestNetwork)

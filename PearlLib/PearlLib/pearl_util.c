@@ -26,3 +26,19 @@ double pearl_util_rand_norm(double mu, double sigma)
 
     return (mu + sigma * (double) X1);
 }
+
+double pearl_util_accuracy(pearl_tensor *output, pearl_tensor *pred)
+{
+    assert(output->dimension == pred->dimension);
+    assert(output->dimension == 1);
+    unsigned int correct = 0;
+    for (unsigned int i = 0; i < output->size[0]; i++) {
+        if (output->data[i] < 0.5 && pred->data[i] < 0.5) {
+            correct++;
+        }
+        if (output->data[i] >= 0.5 && pred->data[i] >= 0.5) {
+            correct++;
+        }
+    }
+    return 1.0 * correct / output->size[0];
+}
