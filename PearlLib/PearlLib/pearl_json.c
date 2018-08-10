@@ -6,7 +6,7 @@ JSON_Value *pearl_json_layer_serialise(pearl_layer *layer)
     JSON_Object *obj = json_value_get_object(value);
     json_object_set_value(obj, "version", pearl_json_version_serialise(layer->version));
     json_object_set_number(obj, "activation", (double)layer->activation_function);
-    json_object_set_number(obj, "neurons", layer->neurons);
+    json_object_set_number(obj, "neurons", layer->num_neurons);
     json_object_set_number(obj, "type", (double)layer->type);
     json_object_set_value(obj, "biases", pearl_json_tensor_serialise(layer->biases));
     json_object_set_value(obj, "weights", pearl_json_tensor_serialise(layer->weights));
@@ -23,7 +23,7 @@ pearl_layer *pearl_json_layer_deserialise(JSON_Value *json)
     pearl_layer *layer = malloc(sizeof(pearl_layer));
     layer->version = pearl_json_version_deserialise(layer_version);
     layer->activation_function = (pearl_activation_function_type)json_object_get_number(obj, "activation");
-    layer->neurons = (unsigned int)json_object_get_number(obj, "neurons");
+    layer->num_neurons = (unsigned int)json_object_get_number(obj, "neurons");
     layer->type = (pearl_layer_type)json_object_get_number(obj, "type");
     layer->biases = pearl_json_tensor_deserialise(json_object_get_value(obj, "biases"));
     layer->weights = pearl_json_tensor_deserialise(json_object_get_value(obj, "weights"));

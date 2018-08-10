@@ -46,7 +46,7 @@ void PearlLibTestNetwork::testCaseAddLayer()
     QVERIFY(network->layers[0] != NULL);
     QCOMPARE(network->layers[0]->activation_function, pearl_activation_function_type_relu);
     //QCOMPARE(network->layers[0]->dropout_rate, 0.0);
-    QCOMPARE(network->layers[0]->neurons, 5);
+    QCOMPARE(network->layers[0]->num_neurons, 5);
     QCOMPARE(network->layers[0]->type, pearl_layer_type_fully_connect);
     QCOMPARE(network->layers[0]->version.major, PEARL_LAYER_VERSION_MAJOR);
     QCOMPARE(network->layers[0]->version.minor, PEARL_LAYER_VERSION_MINOR);
@@ -60,7 +60,7 @@ void PearlLibTestNetwork::testCaseAddLayer()
     QVERIFY(network->layers[1] != NULL);
     QCOMPARE(network->layers[1]->activation_function, pearl_activation_function_type_sigmoid);
     //QCOMPARE(network->layers[1]->dropout_rate, 0.0);
-    QCOMPARE(network->layers[1]->neurons, 1);
+    QCOMPARE(network->layers[1]->num_neurons, 1);
     QCOMPARE(network->layers[1]->type, pearl_layer_type_fully_connect);
     QCOMPARE(network->layers[1]->version.major, PEARL_LAYER_VERSION_MAJOR);
     QCOMPARE(network->layers[1]->version.minor, PEARL_LAYER_VERSION_MINOR);

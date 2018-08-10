@@ -4,11 +4,11 @@ void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_prev_laye
 {
     if (*layer != NULL) {
         if ((*layer)->biases == NULL) {
-            (*layer)->biases = pearl_tensor_create(1, (*layer)->neurons);
+            (*layer)->biases = pearl_tensor_create(1, (*layer)->num_neurons);
         }
         if ((*layer)->weights == NULL) {
-            (*layer)->weights = pearl_tensor_create(2, (*layer)->neurons, num_neurons_prev_layer);
-            double var = sqrt(2.0 / ((*layer)->neurons + num_neurons_prev_layer));
+            (*layer)->weights = pearl_tensor_create(2, (*layer)->num_neurons, num_neurons_prev_layer);
+            double var = sqrt(2.0 / ((*layer)->num_neurons + num_neurons_prev_layer));
             for (unsigned int i = 0; i < (*layer)->weights->size[0] * (*layer)->weights->size[1]; i++) {
                 (*layer)->weights->data[i] = pearl_util_rand_norm(0.0, var);
             }

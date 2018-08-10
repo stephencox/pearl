@@ -43,7 +43,7 @@ PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_laye
     }
     pearl_layer *layer = malloc(sizeof(pearl_layer));
     layer->type = type;
-    layer->neurons = neurons;
+    layer->num_neurons = neurons;
     layer->activation_function = activation_function;
     layer->weights = NULL;
     layer->biases = NULL;
@@ -75,7 +75,7 @@ PEARL_API void pearl_network_layers_initialise(pearl_network **network)
 {
     if ((*network)->layers != NULL) {
         for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-            unsigned int num_neurons_prev_layer = (i == 0 ? (*network)->num_input : (*network)->layers[i - 1]->neurons);
+            unsigned int num_neurons_prev_layer = (i == 0 ? (*network)->num_input : (*network)->layers[i - 1]->num_neurons);
             pearl_layer_initialise(&(*network)->layers[i], num_neurons_prev_layer);
         }
     }

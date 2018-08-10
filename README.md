@@ -1,6 +1,6 @@
 ## TODO
 
-* Add pearl_loss struct containing loss function
+* Review layer inner workings to add other layers
 * Review for loops in forward and backward
 * Add batch learning
 * Add pearl_data interface

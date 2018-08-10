@@ -21,7 +21,7 @@ typedef struct {
     pearl_version version;
     pearl_layer_type type;
     pearl_activation_function_type activation_function;
-    unsigned int neurons; //TODO: Rename to num_neurons
+    unsigned int num_neurons;
     //double dropout_rate;
     pearl_tensor *weights;
     pearl_tensor *biases;
