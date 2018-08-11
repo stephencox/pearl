@@ -25,13 +25,6 @@ void pearl_layer_destroy(pearl_layer **layer)
         if ((*layer)->weights != NULL) {
             pearl_tensor_destroy(&(*layer)->weights);
         }
-        if ((*layer)->additional_data != NULL) {
-            if ((*layer)->type == pearl_layer_type_dropout) {
-                pearl_layer_dropout_data *data = (pearl_layer_dropout_data *)(*layer)->additional_data;
-                pearl_tensor_destroy(data->mask);
-            }
-            free((*layer)->additional_data);
-        }
         free(*layer);
         *layer = NULL;
     }

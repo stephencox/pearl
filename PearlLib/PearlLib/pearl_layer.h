@@ -12,7 +12,7 @@
 #define PEARL_LAYER_VERSION_MINOR 0
 #define PEARL_LAYER_VERSION_REVISION 0
 
-typedef enum pearl_layer_type {
+typedef enum {
     pearl_layer_type_fully_connect,
     pearl_layer_type_dropout
 } pearl_layer_type;
@@ -22,15 +22,9 @@ typedef struct {
     pearl_layer_type type;
     pearl_activation_function_type activation_function;
     unsigned int num_neurons;
-    void *additional_data;
     pearl_tensor *weights;
     pearl_tensor *biases;
 } pearl_layer;
-
-typedef struct {
-    double rate;
-    pearl_tensor *mask;
-} pearl_layer_dropout_data;
 
 void pearl_layer_initialise(pearl_layer **layer, const int num_neurons_prev_layer);
 void pearl_layer_destroy(pearl_layer **layer);

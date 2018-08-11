@@ -47,12 +47,6 @@ PEARL_API void pearl_network_layer_add(pearl_network **network, const pearl_laye
     layer->activation_function = activation_function;
     layer->weights = NULL;
     layer->biases = NULL;
-    if (type != pearl_layer_type_dropout) {
-        layer->additional_data = NULL;
-    }
-    else {
-        layer->additional_data = malloc(sizeof(pearl_layer_dropout_data));
-    }
     layer->version.major = PEARL_LAYER_VERSION_MAJOR;
     layer->version.minor = PEARL_LAYER_VERSION_MINOR;
     layer->version.revision = PEARL_LAYER_VERSION_REVISION;
@@ -67,8 +61,6 @@ PEARL_API void pearl_network_layer_add_output(pearl_network **network, const pea
 PEARL_API void pearl_network_layer_add_dropout(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function, const double dropout_rate)
 {
     pearl_network_layer_add(network, pearl_layer_type_dropout, neurons, activation_function);
-    pearl_network *network_p = (*network);
-    ((pearl_layer_dropout_data *)network_p->layers[network_p->num_layers - 1]->additional_data)->rate = dropout_rate;
 }
 
 PEARL_API void pearl_network_layer_add_fully_connect(pearl_network **network, const int neurons, const pearl_activation_function_type activation_function)
