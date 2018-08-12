@@ -4,9 +4,6 @@ PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
 {
     va_list list;
     pearl_tensor *result = malloc(sizeof(pearl_tensor));
-    result->version.major = PEARL_TENSOR_VERSION_MAJOR;
-    result->version.minor = PEARL_TENSOR_VERSION_MINOR;
-    result->version.revision = PEARL_TENSOR_VERSION_REVISION;
     result->dimension = num_args;
     result->size = calloc(num_args, sizeof(unsigned int));
     va_start(list, num_args);

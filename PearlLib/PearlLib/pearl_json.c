@@ -102,7 +102,6 @@ JSON_Value *pearl_json_tensor_serialise(pearl_tensor *tensor)
 {
     JSON_Value *value = json_value_init_object();
     JSON_Object *obj = json_value_get_object(value);
-    json_object_set_value(obj, "version", pearl_json_version_serialise(tensor->version));
     json_object_set_number(obj, "dimension", tensor->dimension);
     JSON_Value *size = json_value_init_array();
     JSON_Array *size_array = json_value_get_array(size);
@@ -129,7 +128,6 @@ pearl_tensor *pearl_json_tensor_deserialise(JSON_Value *json)
         return NULL;
     }
     pearl_tensor *tensor = malloc(sizeof(pearl_tensor));
-    tensor->version = pearl_json_version_deserialise(tensor_version);
     tensor->dimension = (unsigned int)json_object_get_number(obj, "dimension");
     JSON_Value *tensor_size_array = json_object_get_value(obj, "size");
     if (tensor_size_array == NULL) {
