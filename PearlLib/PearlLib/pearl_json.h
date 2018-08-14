@@ -7,7 +7,7 @@
 #include <pearl_tensor.h>
 #include <pearl_version.h>
 
-JSON_Value *pearl_json_layer_serialise(pearl_layer *layer);
+void pearl_json_layer_serialise(pearl_layer *layer, JSON_Object **parent);
 pearl_layer *pearl_json_layer_deserialise(JSON_Value *json);
 PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_network *network);
 PEARL_API pearl_network *pearl_json_network_deserialise(const char *filename);

@@ -1,32 +1,58 @@
 #include <pearl_json.h>
 
-JSON_Value *pearl_json_layer_serialise(pearl_layer *layer)
+void pearl_json_layer_serialise(pearl_layer *layer, JSON_Object **parent)
 {
-    JSON_Value *value = json_value_init_object();
-    JSON_Object *obj = json_value_get_object(value);
-    json_object_set_value(obj, "version", pearl_json_version_serialise(layer->version));
-    json_object_set_number(obj, "activation", (double)layer->activation_function);
-    json_object_set_number(obj, "neurons", layer->num_neurons);
-    json_object_set_number(obj, "type", (double)layer->type);
-    json_object_set_value(obj, "biases", pearl_json_tensor_serialise(layer->biases));
-    json_object_set_value(obj, "weights", pearl_json_tensor_serialise(layer->weights));
-    return value;
-}
+    /*json_object_set_number((*parent), "type", (double)layer->type);
+    pearl_layer_data_input *data_input;
+    pearl_layer_data_input *data_output;
+    pearl_layer_data_fully_connected *data_fully_connected;
+    pearl_layer_data_dropout *data_dropout;
+    switch (layer->type) {
+        case pearl_layer_type_input:
+            data_input = (pearl_layer_data_input *)layer->layer_data;
+            json_object_set_number((*parent), "activation_function", (double)data_input->activation_function);
+            json_object_set_number((*parent), "num_neurons", (double)data_input->num_neurons);
+            break;
+        case pearl_layer_type_output:
+            data_fully_connected = (pearl_layer_data_fully_connected *)layer->layer_data;
+            json_object_set_number((*parent), "activation_function", (double)data_output->activation_function);
+            json_object_set_number((*parent), "num_neurons", (double)data_output->num_neurons);
+            break;
+        case pearl_layer_type_fully_connected:
+            data_output = (pearl_layer_data_output *)layer->layer_data;
+            json_object_set_number((*parent), "activation_function", (double)data_fully_connected->activation_function);
+            json_object_set_number((*parent), "num_neurons", (double)data_fully_connected->num_neurons);
+            json_object_set_value((*parent), "biases", pearl_json_tensor_serialise(data_fully_connected->biases));
+            json_object_set_value((*parent), "weights", pearl_json_tensor_serialise(data_fully_connected->weights));
+            break;
+        case pearl_layer_type_dropout:
+            data_output = (pearl_layer_data_dropout *)layer->layer_data;
+            json_object_set_number((*parent), "num_neurons", (double)data_dropout->num_neurons);
+            json_object_set_number((*parent), "rate", (double)data_dropout->rate);
+            json_object_set_value((*parent), "weights", pearl_json_tensor_serialise(data_dropout->weights));
+            break;
+    }
+    json_object_set_number((*parent), "num_child_layers", (double)layer->num_child_layers);
+    for (int i = 0; i < layer->num_child_layers; i++) {
+        pearl_json_layer_serialise(layer->child_layers[i],);
+    }
+    * /
+    }
 
-pearl_layer *pearl_json_layer_deserialise(JSON_Value *json)
-{
+    pearl_layer *pearl_json_layer_deserialise(JSON_Value *json)
+    {
     JSON_Object *obj = json_value_get_object(json);
     JSON_Value *layer_version = json_object_get_value(obj, "version");
     if (layer_version == NULL) {
         return NULL;
     }
     pearl_layer *layer = malloc(sizeof(pearl_layer));
-    layer->version = pearl_json_version_deserialise(layer_version);
+    /*layer->version = pearl_json_version_deserialise(layer_version);
     layer->activation_function = (pearl_activation_function_type)json_object_get_number(obj, "activation");
     layer->num_neurons = (unsigned int)json_object_get_number(obj, "neurons");
     layer->type = (pearl_layer_type)json_object_get_number(obj, "type");
     layer->biases = pearl_json_tensor_deserialise(json_object_get_value(obj, "biases"));
-    layer->weights = pearl_json_tensor_deserialise(json_object_get_value(obj, "weights"));
+    layer->weights = pearl_json_tensor_deserialise(json_object_get_value(obj, "weights"));*/
     return layer;
 }
 
@@ -35,7 +61,12 @@ PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_ne
     JSON_Value *root_value = json_value_init_object();
     JSON_Object *root_object = json_value_get_object(root_value);
     json_object_set_value(root_object, "version", pearl_json_version_serialise(network->version));
-    json_object_set_number(root_object, "num_input", network->num_input);
+    JSON_Value *layers_value = json_value_init_object();
+    JSON_Object *layers_object = json_value_get_object(layers_value);
+    for (int i = 0; i < network->num_input_layers; i++) {
+        pearl_json_layer_serialise(network->input_layers[i], &layers_object);
+    }
+    /*json_object_set_number(root_object, "num_input", network->num_input);
     json_object_set_number(root_object, "num_output", network->num_output);
     json_object_set_number(root_object, "num_layers", network->num_layers);
     json_object_set_number(root_object, "loss_type", (double)network->loss.type);
@@ -47,7 +78,7 @@ PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_ne
         json_array_append_value(layers_array, pearl_json_layer_serialise(network->layers[i]));
     }
     json_object_set_value(root_object, "layers", layers);
-    json_serialize_to_file(root_value, filename);
+    json_serialize_to_file(root_value, filename);*/
     json_value_free(root_value);
 }
 
@@ -76,7 +107,7 @@ PEARL_API pearl_network *pearl_json_network_deserialise(const char *filename)
         return NULL;
     }
 
-    network = pearl_network_create(num_input, num_output);
+    /*network = pearl_network_create(num_input, num_output);
     network->version = version;
     network->learning_rate = learning_rate;
     network->loss = pearl_loss_create(loss_type);
@@ -95,7 +126,7 @@ PEARL_API pearl_network *pearl_json_network_deserialise(const char *filename)
     }
     json_value_free(value);
 
-    return network;
+    return network;*/
 }
 
 JSON_Value *pearl_json_tensor_serialise(pearl_tensor *tensor)

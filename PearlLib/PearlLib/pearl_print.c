@@ -6,19 +6,19 @@ void pearl_print_layer(const pearl_layer *layer)
         printf("Type: pearl_layer\n");
         printf("Type: ");
         switch (layer->type) {
-            case pearl_layer_type_fully_connect:
-                printf("Fully connect");
+            case pearl_layer_type_fully_connected:
+                printf("Fully connected");
                 break;
-            //            case pearl_layer_type_dropout:
-            //                printf("Dropout");
-            //                break;
+            case pearl_layer_type_dropout:
+                printf("Dropout");
+                break;
             default:
                 printf("None");
                 break;
         }
         printf("\n");
 
-        printf("Activation: ");
+        /*printf("Activation: ");
         switch (layer->activation_function) {
             case pearl_activation_function_type_linear:
                 printf("Linear");
@@ -50,7 +50,7 @@ void pearl_print_layer(const pearl_layer *layer)
         else {
             printf("None");
         }
-        printf("\n");
+        printf("\n");*/
 
     }
     else {
