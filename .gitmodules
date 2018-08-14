@@ -1,3 +1,6 @@
 [submodule "external/parson"]
 	path = external/parson
 	url = https://github.com/kgabis/parson.git
+[submodule "external/munit"]
+	path = external/munit
+	url = https://github.com/nemequ/munit.git
