@@ -1,8 +1,7 @@
 #include <stdio.h>
-//#include <pearl_network.h>
+#include <pearl_network.h>
 //#include <pearl_tensor.h>
 //#include <time.h>
-#include <pearl_graph.h>
 
 int main()
 {
@@ -46,15 +45,6 @@ int main()
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
     //pearl_tensor_destroy(&output_pred);*/
-
-    pearl_graph *graph = pearl_graph_create(1);
-    pearl_graph_layer *input = pearl_graph_layer_create_input(10);
-    pearl_graph_layer *fc1 = pearl_graph_layer_create_fully_connected(10, 10);
-    pearl_graph_layer *output = pearl_graph_layer_create_output(10);
-    graph->inputs[0] = input;
-    pearl_graph_add_child(&input, &fc1);
-    pearl_graph_add_child(&fc1, &output);
-    pearl_graph_destroy(&graph);
 
     return 0;
 }

@@ -34,70 +34,32 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
     // Cost
     pearl_tensor *al = (*network)->output_layer->a;
     double cost = pearl_loss_cost((*network)->loss, output, al);
+
+    //Backward
+    pearl_network_backward(network, output);
+
     /*
-        //Backward
-        pearl_tensor **dw = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-        pearl_tensor **db = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-        pearl_tensor **dZ = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-        pearl_tensor **dA = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
-        unsigned int i;
-        for (unsigned int num_layer = (*network)->num_layers; num_layer > 0; num_layer--) {
-            i = num_layer - 1;
-            if (i == (*network)->num_layers - 1) {
-                assert(dA[i + 1] == NULL);
-                dA[i + 1] = pearl_tensor_create(2, output->size[0], output->size[1]);
-                for (unsigned int j = 0; j < output->size[1]; j++) {
-                    for (unsigned int x = 0; x < output->size[0]; x++) {
-                        assert(ARRAY_IDX_2D(j, x, output->size[0]) < output->size[0]*output->size[1]);
-                        assert(ARRAY_IDX_2D(x, j, dA[i + 1]->size[1]) < dA[i + 1]->size[0]*dA[i + 1]->size[1]);
-                        assert(ARRAY_IDX_2D(x, j, al->size[1]) < al->size[0]*al->size[1]);
-                        dA[i + 1]->data[ARRAY_IDX_2D(x, j, dA[i + 1]->size[1])] = - (*network)->loss.calculate_derivative(output->data[ARRAY_IDX_2D(j, x, output->size[0])], al->data[ARRAY_IDX_2D(x, j, al->size[1])]);
-                    }
-                }
-            }
-
-            assert(dw[i] == NULL);
-            assert(dA[i + 1] != NULL);
-            dw[i] = pearl_tensor_create(2, dA[i + 1]->size[0], a[i]->size[0]);
-            assert(db[i] == NULL);
-            db[i] = pearl_tensor_create(1, dA[i + 1]->size[0]);
-            assert(dZ[i] == NULL);
-            dZ[i] = pearl_tensor_create(2, dA[i + 1]->size[0], dA[i + 1]->size[1]);
-            assert(dA[i] == NULL);
-            dA[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[1], dZ[i]->size[1]);
-            double (*activationFunctionDerivativePtr)(double) = pearl_activation_function_derivative_pointer((*network)->layers[i]->activation_function);
-
-            for (unsigned int j = 0; j < dZ[i]->size[1]; j++) {
-                for (unsigned int x = 0; x < dZ[i]->size[0]; x++) {
-                    assert(ARRAY_IDX_2D(j, x, z[i]->size[0]) < z[i]->size[0]*z[i]->size[1]);
-                    assert(ARRAY_IDX_2D(x, j, dZ[i]->size[1]) < dZ[i]->size[0]*dZ[i]->size[1]);
-                    assert(ARRAY_IDX_2D(x, j, dA[i + 1]->size[1]) < dA[i + 1]->size[0]*dA[i + 1]->size[1]);
-                    dZ[i]->data[ARRAY_IDX_2D(x, j, dZ[i]->size[1])] = activationFunctionDerivativePtr(z[i]->data[ARRAY_IDX_2D(x, j, z[i]->size[1])]) * dA[i + 1]->data[ARRAY_IDX_2D(x, j, dA[i + 1]->size[1])];
-                }
-            }
-            pearl_layer_backward((*network)->layers[i], dZ[i], a[i], &dw[i], &db[i], &dA[i]);
-        }
-        //Update
-        for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-            pearl_layer_update((*network)->layers[i], dw[i], db[i], (*network)->learning_rate);
-        }
-        // Clean
-        for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-            pearl_tensor_destroy(&a[i]);
-            pearl_tensor_destroy(&z[i]);
-            pearl_tensor_destroy(&dw[i]);
-            pearl_tensor_destroy(&db[i]);
-            pearl_tensor_destroy(&dA[i]);
-            pearl_tensor_destroy(&dZ[i]);
-        }
-        pearl_tensor_destroy(&a[(*network)->num_layers]);
-        pearl_tensor_destroy(&dA[(*network)->num_layers]);
-        free(a);
-        free(z);
-        free(dw);
-        free(db);
-        free(dA);
-        free(dZ);
+    //Update
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
+        pearl_layer_update((*network)->layers[i], dw[i], db[i], (*network)->learning_rate);
+    }
+    // Clean
+    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
+        pearl_tensor_destroy(&a[i]);
+        pearl_tensor_destroy(&z[i]);
+        pearl_tensor_destroy(&dw[i]);
+        pearl_tensor_destroy(&db[i]);
+        pearl_tensor_destroy(&dA[i]);
+        pearl_tensor_destroy(&dZ[i]);
+    }
+    pearl_tensor_destroy(&a[(*network)->num_layers]);
+    pearl_tensor_destroy(&dA[(*network)->num_layers]);
+    free(a);
+    free(z);
+    free(dw);
+    free(db);
+    free(dA);
+    free(dZ);
     */
     return cost;
 
@@ -116,8 +78,29 @@ void pearl_network_forward(pearl_network **network, const pearl_tensor *input)
             }
         }
     }
+
+    /* Recursive forward other layers */
     for (unsigned int i = 0; i < (*network)->input_layer->num_child_layers; i++) {
         pearl_layer_forward(&(*network)->input_layer, &(*network)->input_layer->child_layers[i]);
+    }
+}
+
+void pearl_network_backward(pearl_network **network, const pearl_tensor *output)
+{
+    /* Initialise loss derivative */
+    (*network)->output_layer->da = pearl_tensor_create(2, output->size[0], output->size[1]);
+    for (unsigned int j = 0; j < output->size[1]; j++) {
+        for (unsigned int x = 0; x < output->size[0]; x++) {
+            assert(ARRAY_IDX_2D(j, x, output->size[0]) < output->size[0]*output->size[1]);
+            assert(ARRAY_IDX_2D(x, j, (*network)->output_layer->da->size[1]) < (*network)->output_layer->da->size[0] * (*network)->output_layer->da->size[1]);
+            assert(ARRAY_IDX_2D(x, j, (*network)->output_layer->a->size[1]) < (*network)->output_layer->a->size[0] * (*network)->output_layer->a->size[1]);
+            (*network)->output_layer->da->data[ARRAY_IDX_2D(x, j, (*network)->output_layer->da->size[1])] = - (*network)->loss.calculate_derivative(output->data[ARRAY_IDX_2D(j, x, output->size[0])], (*network)->output_layer->a->data[ARRAY_IDX_2D(x, j, (*network)->output_layer->a->size[1])]);
+        }
+    }
+
+    /* Recursive forward other layers */
+    for (unsigned int i = 0; i < (*network)->output_layer->num_parent_layers; i++) {
+        pearl_layer_backward(&(*network)->output_layer, &(*network)->output_layer->parent_layers[i]);
     }
 }
 

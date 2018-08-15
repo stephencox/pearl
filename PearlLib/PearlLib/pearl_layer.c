@@ -107,6 +107,8 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
     for (unsigned int i = 0; i < data->weights->size[0] * data->weights->size[1]; i++) {
         data->weights->data[i] = pearl_util_rand_norm(0.0, var);
     }
+    data->db = NULL;
+    data->dw = NULL;
     layer->layer_data = data;
     return layer;
 }
@@ -170,48 +172,93 @@ void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer
     }
 }
 
-void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dA, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **da_prev)
+void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer)
 {
-    /*pearl_tensor *dw_p = (*dw);
-    pearl_tensor *db_p = (*db);
-    pearl_tensor *da_prev_p = (*da_prev);
-    assert(dA->dimension == 2);
-    assert(dA->dimension == 2);
-    assert(a->dimension == 2);
-    assert(dA->size[1] == a->size[1]);
-    assert(dw_p->dimension == 2);
-    assert(dw_p->size[0] == dA->size[0]);
-    assert(dw_p->size[1] == a->size[0]);
-    assert(db_p->dimension == 1);
-    for (unsigned int i = 0; i < dA->size[0]; i++) {
-        for (unsigned int j = 0; j < a->size[0]; j++) {
-            double sum_w = 0.0;
-            double sum_b = 0.0;
-            for (unsigned int k = 0; k < dA->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, dA->size[1]) < dA->size[0] * dA->size[1]);
-                assert(ARRAY_IDX_2D(j, k, a->size[1]) < a->size[0]*a->size[1]);
-                sum_w += dA->data[ARRAY_IDX_2D(i, k, dA->size[1])] * a->data[ARRAY_IDX_2D(j, k, a->size[1])];
-                sum_b += dA->data[ARRAY_IDX_2D(i, k, dA->size[1])]; //TODO: remove duplicate add
-            }
-            assert(ARRAY_IDX_2D(i, j, dw_p->size[1]) < dw_p->size[0]*dw_p->size[1]);
-            dw_p->data[ARRAY_IDX_2D(i, j, dw_p->size[1])] = sum_w / a->size[1];
-            assert(i < db_p->size[0]);
-            db_p->data[i] = sum_b / a->size[1];
+    switch ((*child_layer)->type) {
+        case pearl_layer_type_input:
+            break;
+        case pearl_layer_type_fully_connected:
+            pearl_layer_backward_fully_connected(child_layer, parent_layer);
+            break;
+        case pearl_layer_type_dropout:
+            break;
+    }
+    for (unsigned int i = 0; i < (*parent_layer)->num_parent_layers; i++) {
+        pearl_layer_backward(&(*parent_layer)->parent_layers[i], parent_layer);
+    }
+
+
+}
+
+void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer)
+{
+    /* Calculate dZ backward with activation derivative */
+    assert((*parent_layer)->layer_data != NULL);
+    pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
+    assert((*child_layer)->da != NULL);
+    assert((*parent_layer)->a != NULL);
+    if ((*child_layer)->dz == NULL) {
+        (*child_layer)->dz = pearl_tensor_create(2, (*child_layer)->da->size[0], (*child_layer)->da->size[1]);
+    }
+    if ((*parent_layer)->da == NULL) {
+        (*parent_layer)->da = pearl_tensor_create(2, (*parent_layer)->a->size[0], (*child_layer)->dz->size[1]);
+    }
+    for (unsigned int j = 0; j < (*child_layer)->dz->size[1]; j++) {
+        for (unsigned int x = 0; x < (*child_layer)->dz->size[0]; x++) {
+            assert(ARRAY_IDX_2D(j, x, (*child_layer)->z->size[0]) < (*child_layer)->z->size[0] * (*child_layer)->z->size[1]);
+            assert(ARRAY_IDX_2D(x, j, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
+            assert(ARRAY_IDX_2D(x, j, (*child_layer)->da->size[1]) < (*child_layer)->da->size[0] * (*child_layer)->da->size[1]);
+            (*child_layer)->dz->data[ARRAY_IDX_2D(x, j, (*child_layer)->dz->size[1])] = (*child_layer)->activation.calculate_derivative((*parent_layer)->z->data[ARRAY_IDX_2D(x, j, (*parent_layer)->z->size[1])]) * (*child_layer)->da->data[ARRAY_IDX_2D(x, j, (*child_layer)->da->size[1])];
         }
     }
-    for (unsigned int i = 0; i < layer->weights->size[1]; i++) {
-        for (unsigned int j = 0; j < dA->size[1]; j++) {
+
+    /* Calculate dW and dB of child layer */
+    assert((*child_layer)->dz->dimension == 2);
+    assert((*child_layer)->dz->dimension == 2);
+    assert((*parent_layer)->a->dimension == 2);
+    assert((*child_layer)->dz->size[1] == (*parent_layer)->a->size[1]);
+    if (data->dw == NULL) {
+        data->dw = pearl_tensor_create(2, (*child_layer)->da->size[0], (*parent_layer)->a->size[0]);
+    }
+
+    if (data->db == NULL) {
+        data->db = pearl_tensor_create(1, (*child_layer)->da->size[0]);
+    }
+    assert(data->dw->dimension == 2);
+    assert(data->dw->size[0] == (*child_layer)->dz->size[0]);
+    assert(data->dw->size[1] == (*parent_layer)->a->size[0]);
+    assert(data->db->dimension == 1);
+    for (unsigned int i = 0; i < (*child_layer)->dz->size[0]; i++) {
+        for (unsigned int j = 0; j < (*parent_layer)->a->size[0]; j++) {
             double sum_w = 0.0;
-            for (unsigned int k = 0; k < layer->weights->size[0]; k++) {
-                assert(ARRAY_IDX_2D(k, i, layer->weights->size[1]) < layer->weights->size[0] * layer->weights->size[1]);
-                assert(ARRAY_IDX_2D(k, j, dA->size[1]) < dA->size[0]*dA->size[1]);
-                sum_w += layer->weights->data[ARRAY_IDX_2D(k, i, layer->weights->size[1])] * dA->data[ARRAY_IDX_2D(k, j, dA->size[1])];
+            double sum_b = 0.0;
+            for (unsigned int k = 0; k < (*child_layer)->dz->size[1]; k++) {
+                assert(ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
+                assert(ARRAY_IDX_2D(j, k, (*parent_layer)->a->size[1]) < (*parent_layer)->a->size[0] * (*parent_layer)->a->size[1]);
+                sum_w += (*child_layer)->dz->data[ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1])] * (*parent_layer)->a->data[ARRAY_IDX_2D(j, k, (*parent_layer)->a->size[1])];
+                sum_b += (*child_layer)->dz->data[ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1])]; //TODO: remove duplicate add
             }
-            assert(ARRAY_IDX_2D(i, j, da_prev_p->size[1]) < da_prev_p->size[0]*da_prev_p->size[1]);
-            da_prev_p->data[ARRAY_IDX_2D(i, j, da_prev_p->size[1])] = sum_w;
+            assert(ARRAY_IDX_2D(i, j, data->dw->size[1]) < data->dw->size[0]*data->dw->size[1]);
+            data->dw->data[ARRAY_IDX_2D(i, j, data->dw->size[1])] = sum_w / (*parent_layer)->a->size[1];
+            assert(i < data->db->size[0]);
+            data->db->data[i] = sum_b / (*parent_layer)->a->size[1];
         }
-    }*/
+    }
+    /* Calculate dA of parent layer */
+    for (unsigned int i = 0; i < data->weights->size[1]; i++) {
+        for (unsigned int j = 0; j < (*child_layer)->da->size[1]; j++) {
+            double sum_w = 0.0;
+            for (unsigned int k = 0; k < data->weights->size[0]; k++) {
+                assert(ARRAY_IDX_2D(k, i, data->weights->size[1]) < data->weights->size[0] * data->weights->size[1]);
+                assert(ARRAY_IDX_2D(k, j, (*child_layer)->da->size[1]) < (*child_layer)->da->size[0] * (*child_layer)->da->size[1]);
+                sum_w += data->weights->data[ARRAY_IDX_2D(k, i, data->weights->size[1])] * (*child_layer)->da->data[ARRAY_IDX_2D(k, j, (*child_layer)->da->size[1])];
+            }
+            assert(ARRAY_IDX_2D(i, j, (*parent_layer)->da->size[1]) < (*parent_layer)->da->size[0] * (*parent_layer)->da->size[1]);
+            (*parent_layer)->da->data[ARRAY_IDX_2D(i, j, (*parent_layer)->da->size[1])] = sum_w;
+        }
+    }
 }
+
 
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate)
 {

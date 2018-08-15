@@ -29,11 +29,15 @@ struct pearl_layer {
     unsigned int num_neurons;
     pearl_tensor *z;
     pearl_tensor *a;
+    pearl_tensor *dz;
+    pearl_tensor *da;
 };
 
 typedef struct {
     pearl_tensor *weights;
     pearl_tensor *biases;
+    pearl_tensor *dw;
+    pearl_tensor *db;
 } pearl_layer_data_fully_connected;
 
 typedef struct {
@@ -49,7 +53,8 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
 pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons);
 void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer);
-void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dz, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **da_prev);
+void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer);
+void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer);
 void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
 
 #endif // PEARL_LAYER_H
