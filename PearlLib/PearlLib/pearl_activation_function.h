@@ -10,8 +10,13 @@ typedef enum {
     pearl_activation_function_type_sigmoid
 } pearl_activation_function_type;
 
-void *pearl_activation_function_pointer(pearl_activation_function_type type);
-void *pearl_activation_function_derivative_pointer(pearl_activation_function_type type);
+typedef struct {
+    pearl_activation_function_type type;
+    double (*calculate)(double);
+    double (*calculate_derivative)(double);
+} pearl_activation;
+
+pearl_activation pearl_activation_create(pearl_activation_function_type type);
 double pearl_activation_function_linear(double input);
 double pearl_activation_function_relu(double input);
 double pearl_activation_function_tanh(double input);

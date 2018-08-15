@@ -1,49 +1,28 @@
 #include <pearl_activation_function.h>
 
-void *pearl_activation_function_pointer(pearl_activation_function_type type)
+pearl_activation pearl_activation_create(pearl_activation_function_type type)
 {
-    double (*activationFunctionPtr)(double);
+    pearl_activation activation;
+    activation.type = type;
     switch (type) {
         case pearl_activation_function_type_linear:
-            activationFunctionPtr = &pearl_activation_function_linear;
+            activation.calculate = &pearl_activation_function_linear;
+            activation.calculate_derivative = &pearl_activation_function_derivative_linear;
             break;
         case pearl_activation_function_type_relu:
-            activationFunctionPtr = &pearl_activation_function_relu;
+            activation.calculate = &pearl_activation_function_relu;
+            activation.calculate_derivative = &pearl_activation_function_derivative_relu;
             break;
         case pearl_activation_function_type_tanh:
-            activationFunctionPtr = &pearl_activation_function_tanh;
+            activation.calculate = &pearl_activation_function_tanh;
+            activation.calculate_derivative = &pearl_activation_function_derivative_tanh;
             break;
         case pearl_activation_function_type_sigmoid:
-            activationFunctionPtr = &pearl_activation_function_sigmoid;
-            break;
-        default:
-            activationFunctionPtr = &pearl_activation_function_tanh;
+            activation.calculate = &pearl_activation_function_sigmoid;
+            activation.calculate_derivative = &pearl_activation_function_derivative_sigmoid;
             break;
     }
-    return activationFunctionPtr;
-}
-
-void *pearl_activation_function_derivative_pointer(pearl_activation_function_type type)
-{
-    double (*activationFunctionPtr)(double);
-    switch (type) {
-        case pearl_activation_function_type_linear:
-            activationFunctionPtr = &pearl_activation_function_derivative_linear;
-            break;
-        case pearl_activation_function_type_relu:
-            activationFunctionPtr = &pearl_activation_function_derivative_relu;
-            break;
-        case pearl_activation_function_type_tanh:
-            activationFunctionPtr = &pearl_activation_function_derivative_tanh;
-            break;
-        case pearl_activation_function_type_sigmoid:
-            activationFunctionPtr = &pearl_activation_function_derivative_sigmoid;
-            break;
-        default:
-            activationFunctionPtr = &pearl_activation_function_derivative_tanh;
-            break;
-    }
-    return activationFunctionPtr;
+    return activation;
 }
 
 double pearl_activation_function_linear(double input)
