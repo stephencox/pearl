@@ -1,11 +1,9 @@
 #include <pearl_network.h>
 
-PEARL_API pearl_network *pearl_network_create(const unsigned int num_input_layers)
+PEARL_API pearl_network *pearl_network_create()
 {
     srand((unsigned int)time(NULL));
     pearl_network *network = malloc(sizeof(pearl_network));
-    network->num_input_layers = num_input_layers;
-    network->input_layers = calloc(num_input_layers, sizeof(pearl_layer *));
     network->optimiser = pearl_optimiser_sgd;
     network->loss = pearl_loss_create(pearl_loss_binary_cross_entropy);
     network->learning_rate = 1e-3;
@@ -18,12 +16,10 @@ PEARL_API pearl_network *pearl_network_create(const unsigned int num_input_layer
 PEARL_API void pearl_network_destroy(pearl_network **network)
 {
     if (*network != NULL) {
-        if ((*network)->input_layers != NULL) {
-            for (unsigned int i = 0; i < (*network)->num_input_layers; i++) {
-                pearl_layer_destroy(&(*network)->input_layers[i]);
-            }
-            free((*network)->input_layers);
-            (*network)->input_layers = NULL;
+        if ((*network)->input_layer != NULL) {
+            pearl_layer_destroy(&(*network)->input_layer);
+            free((*network)->input_layer);
+            (*network)->input_layer = NULL;
         }
         free(*network);
         *network = NULL;
@@ -32,15 +28,13 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
 
 PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
 {
-    /*    // Forward
-        pearl_tensor **z = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-        pearl_tensor **a = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
-        pearl_network_forward(network, input, z, a);
+    // Forward
+    pearl_network_forward(network, input);
 
-        // Cost
-        pearl_tensor *al = a[(*network)->num_layers];
-        double cost = pearl_loss_cost((*network)->loss, output, al);
-
+    // Cost
+    pearl_tensor *al = (*network)->output_layer->a;
+    double cost = pearl_loss_cost((*network)->loss, output, al);
+    /*
         //Backward
         pearl_tensor **dw = calloc((*network)->num_layers, sizeof(pearl_tensor *));
         pearl_tensor **db = calloc((*network)->num_layers, sizeof(pearl_tensor *));
@@ -104,26 +98,27 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
         free(db);
         free(dA);
         free(dZ);
+    */
+    return cost;
 
-        return cost;*/
 }
 
-void pearl_network_forward(pearl_network **network, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a)
+void pearl_network_forward(pearl_network **network, const pearl_tensor *input)
 {
-    /*    a[0] = pearl_tensor_create(2, input->size[1], input->size[0]);
+    /* Initialise input layer */
+    if ((*network)->input_layer->a == NULL) {
+        (*network)->input_layer->z = pearl_tensor_create(2, input->size[1], input->size[0]);
+        (*network)->input_layer->a = pearl_tensor_create(2, input->size[1], input->size[0]);
         for (unsigned int i = 0; i < input->size[0]; i++) {
             for (unsigned int j = 0; j < input->size[1]; j++) {
-                a[0]->data[ARRAY_IDX_2D(j, i, a[0]->size[1])] = input->data[ARRAY_IDX_2D(i, j, input->size[1])];
+                (*network)->input_layer->a->data[ARRAY_IDX_2D(j, i, (*network)->input_layer->a->size[1])] = input->data[ARRAY_IDX_2D(i, j, input->size[1])];
+                (*network)->input_layer->z->data[ARRAY_IDX_2D(j, i, (*network)->input_layer->z->size[1])] = (*network)->input_layer->activation.calculate(input->data[ARRAY_IDX_2D(i, j, input->size[1])]);
             }
         }
-
-        for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-            assert(z[i] == NULL);
-            z[i] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
-            assert(a[i + 1] == NULL);
-            a[i + 1] = pearl_tensor_create(2, (*network)->layers[i]->weights->size[0], a[i]->size[1]);
-            pearl_layer_forward(&(*network)->layers[i], a[i], &z[i], &a[i + 1]);
-        }*/
+    }
+    for (unsigned int i = 0; i < (*network)->input_layer->num_child_layers; i++) {
+        pearl_layer_forward(&(*network)->input_layer, &(*network)->input_layer->child_layers[i]);
+    }
 }
 
 PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input)

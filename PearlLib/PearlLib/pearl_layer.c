@@ -18,13 +18,17 @@ void pearl_layer_destroy(pearl_layer **layer)
             free((*layer)->parent_layers);
             (*layer)->parent_layers = NULL;
         }
+        if ((*layer)->z != NULL) {
+            pearl_tensor_destroy(&(*layer)->z);
+        }
+        if ((*layer)->a != NULL) {
+            pearl_tensor_destroy(&(*layer)->a);
+        }
         if ((*layer)->layer_data != NULL) {
             pearl_layer_data_fully_connected *data_fully_connected;
             pearl_layer_data_dropout *data_dropout;
             switch ((*layer)->type) {
                 case pearl_layer_type_input:
-                    break;
-                case pearl_layer_type_output:
                     break;
                 case pearl_layer_type_fully_connected:
                     data_fully_connected = (pearl_layer_data_fully_connected *)(*layer)->layer_data;
@@ -85,21 +89,8 @@ pearl_layer *pearl_layer_create_input(unsigned int num_neurons)
 {
     pearl_layer *layer = pearl_layer_create();
     layer->type = pearl_layer_type_input;
-    pearl_layer_data_input *data = malloc(sizeof(pearl_layer_data_input));
-    data->activation_function = pearl_activation_function_type_linear;
-    data->num_neurons = num_neurons;
-    layer->layer_data = data;
-    return layer;
-}
-
-pearl_layer *pearl_layer_create_output(unsigned int num_neurons)
-{
-    pearl_layer *layer = pearl_layer_create();
-    pearl_layer_data_output *data = malloc(sizeof(pearl_layer_data_output));
-    data->activation_function = pearl_activation_function_type_linear;
-    data->num_neurons = num_neurons;
-    layer->type = pearl_layer_type_output;
-    layer->layer_data = data;
+    layer->activation = pearl_activation_create(pearl_activation_function_type_linear);
+    layer->num_neurons = num_neurons;
     return layer;
 }
 
@@ -107,12 +98,12 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
 {
     pearl_layer *layer = pearl_layer_create();
     layer->type = pearl_layer_type_fully_connected;
+    layer->activation = pearl_activation_create(pearl_activation_function_type_relu);
+    layer->num_neurons = num_neurons;
     pearl_layer_data_fully_connected *data = malloc(sizeof(pearl_layer_data_fully_connected));
-    data->activation_function = pearl_activation_function_type_relu;
-    data->num_neurons = num_neurons;
-    data->biases = pearl_tensor_create(1, data->num_neurons);
-    data->weights = pearl_tensor_create(2, data->num_neurons, num_neurons_prev_layer);
-    double var = sqrt(2.0 / (data->num_neurons + num_neurons_prev_layer));
+    data->biases = pearl_tensor_create(1, layer->num_neurons);
+    data->weights = pearl_tensor_create(2, layer->num_neurons, num_neurons_prev_layer);
+    double var = sqrt(2.0 / (layer->num_neurons + num_neurons_prev_layer));
     for (unsigned int i = 0; i < data->weights->size[0] * data->weights->size[1]; i++) {
         data->weights->data[i] = pearl_util_rand_norm(0.0, var);
     }
@@ -124,38 +115,59 @@ pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons)
 {
     pearl_layer *layer = pearl_layer_create();
     layer->type = pearl_layer_type_dropout;
+    layer->num_neurons = num_neurons;
     pearl_layer_data_dropout *data = malloc(sizeof(pearl_layer_data_dropout));
     data->rate = 0.5;
-    data->num_neurons = num_neurons;
-    data->weights = pearl_tensor_create(1, data->num_neurons);
+    data->weights = pearl_tensor_create(1, layer->num_neurons);
     layer->layer_data = data;
     return layer;
 }
 
-void pearl_layer_forward(pearl_layer **layer, const pearl_tensor *input, pearl_tensor **z, pearl_tensor **a)
+void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer)
 {
-    /*pearl_tensor *z_p = (*z);
-    pearl_tensor *a_p = (*a);
-    assert((*layer)->weights->size[1] == input->size[0]);
-    assert((*layer)->weights->dimension == 2);
-    assert((*layer)->biases->dimension == 1);
-    assert((*layer)->weights->size[0] == (*layer)->biases->size[0]);
-    double (*activationFunctionPtr)(double) = pearl_activation_function_pointer((*layer)->activation_function);
-    for (unsigned int i = 0; i < (*layer)->weights->size[0]; i++) {
+    switch ((*child_layer)->type) {
+        case pearl_layer_type_input:
+            break;
+        case pearl_layer_type_fully_connected:
+            pearl_layer_forward_fully_connected(parent_layer, child_layer);
+            break;
+        case pearl_layer_type_dropout:
+            break;
+    }
+    for (unsigned int i = 0; i < (*child_layer)->num_child_layers; i++) {
+        pearl_layer_forward(child_layer, &(*child_layer)->child_layers[i]);
+    }
+}
+
+void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer)
+{
+    pearl_tensor *input = (*parent_layer)->a;
+    pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
+    if ((*child_layer)->z == NULL) {
+        (*child_layer)->z = pearl_tensor_create(2, data->weights->size[0], input->size[1]);
+    }
+    if ((*child_layer)->a == NULL) {
+        (*child_layer)->a = pearl_tensor_create(2, data->weights->size[0], input->size[1]);
+    }
+    assert(data->weights->size[1] == input->size[0]);
+    assert(data->weights->dimension == 2);
+    assert(data->biases->dimension == 1);
+    assert(data->weights->size[0] == data->biases->size[0]);
+    for (unsigned int i = 0; i < data->weights->size[0]; i++) {
         for (unsigned int j = 0; j < input->size[1]; j++) {
             double sum = 0.0;
-            for (unsigned int k = 0; k < (*layer)->weights->size[1]; k++) {
-                assert(ARRAY_IDX_2D(i, k, (*layer)->weights->size[1]) < (*layer)->weights->size[0] * (*layer)->weights->size[1]);
+            for (unsigned int k = 0; k < data->weights->size[1]; k++) {
+                assert(ARRAY_IDX_2D(i, k, data->weights->size[1]) < data->weights->size[0] * data->weights->size[1]);
                 assert(ARRAY_IDX_2D(k, j, input->size[1]) < input->size[0]*input->size[1]);
-                sum += (*layer)->weights->data[ARRAY_IDX_2D(i, k, (*layer)->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
+                sum += data->weights->data[ARRAY_IDX_2D(i, k, data->weights->size[1])] * input->data[ARRAY_IDX_2D(k, j, input->size[1])];
             }
-            sum += (*layer)->biases->data[i];
-            assert(ARRAY_IDX_2D(i, j, z_p->size[1]) < z_p->size[0]*z_p->size[1]);
-            z_p->data[ARRAY_IDX_2D(i, j, z_p->size[1])] = sum;
-            assert(ARRAY_IDX_2D(i, j, a_p->size[1]) < a_p->size[0]*a_p->size[1]);
-            a_p->data[ARRAY_IDX_2D(i, j, a_p->size[1])] = (*activationFunctionPtr)(sum);
+            sum += data->biases->data[i];
+            assert(ARRAY_IDX_2D(i, j, (*child_layer)->z->size[1]) < (*child_layer)->z->size[0] * (*child_layer)->z->size[1]);
+            (*child_layer)->z->data[ARRAY_IDX_2D(i, j, (*child_layer)->z->size[1])] = sum;
+            assert(ARRAY_IDX_2D(i, j, (*child_layer)->a->size[1]) < (*child_layer)->a->size[0] * (*child_layer)->a->size[1]);
+            (*child_layer)->a->data[ARRAY_IDX_2D(i, j, (*child_layer)->a->size[1])] = (*child_layer)->activation.calculate(sum);
         }
-    }*/
+    }
 }
 
 void pearl_layer_backward(const pearl_layer *layer, const pearl_tensor *dA, const pearl_tensor *a, pearl_tensor **dw, pearl_tensor **db, pearl_tensor **da_prev)

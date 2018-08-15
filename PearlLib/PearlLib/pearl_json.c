@@ -63,9 +63,7 @@ PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_ne
     json_object_set_value(root_object, "version", pearl_json_version_serialise(network->version));
     JSON_Value *layers_value = json_value_init_object();
     JSON_Object *layers_object = json_value_get_object(layers_value);
-    for (int i = 0; i < network->num_input_layers; i++) {
-        pearl_json_layer_serialise(network->input_layers[i], &layers_object);
-    }
+    pearl_json_layer_serialise(network->input_layer, &layers_object);
     /*json_object_set_number(root_object, "num_input", network->num_input);
     json_object_set_number(root_object, "num_output", network->num_output);
     json_object_set_number(root_object, "num_layers", network->num_layers);
