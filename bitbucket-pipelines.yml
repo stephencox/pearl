@@ -12,6 +12,7 @@ pipelines:
             - apt-get install -y gperf
             - gcc --version
             - cmake --version
+            - git submodule update --init
             - mkdir build
             - cd build
             - cmake ..
