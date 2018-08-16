@@ -2,6 +2,7 @@
 #define PEARL_PRINT_H
 
 #include <pearl_layer.h>
+#include <pearl_tensor.h>
 #include <stdio.h>
 
 void pearl_print_layer(const pearl_layer *layer);

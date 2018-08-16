@@ -1,6 +1,7 @@
 #ifndef PEARL_ACTIVATION_FUNCTION_H
 #define PEARL_ACTIVATION_FUNCTION_H
 
+#include <pearl_global.h>
 #include <math.h>
 
 typedef enum {
@@ -16,7 +17,7 @@ typedef struct {
     double (*calculate_derivative)(double);
 } pearl_activation;
 
-pearl_activation pearl_activation_create(pearl_activation_function_type type);
+PEARL_API pearl_activation pearl_activation_create(pearl_activation_function_type type);
 double pearl_activation_function_linear(double input);
 double pearl_activation_function_relu(double input);
 double pearl_activation_function_tanh(double input);

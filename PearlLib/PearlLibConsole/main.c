@@ -1,16 +1,20 @@
 #include <stdio.h>
 #include <pearl_network.h>
-//#include <pearl_tensor.h>
-//#include <time.h>
+#include <time.h>
 
 int main()
 {
-    /*clock_t t1, t2;
-    pearl_network *network = pearl_network_create(2, 1);
-    pearl_network_layer_add_fully_connect(&network, 1000, pearl_activation_function_type_relu);
-    //pearl_network_layer_add_fully_connect(&network, 1000, pearl_activation_function_type_relu);
-    pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
-    pearl_network_layers_initialise(&network);
+    pearl_network *network = pearl_network_create();
+    pearl_layer *input_layer = pearl_layer_create_input(2);
+    network->input_layer = input_layer;
+    pearl_layer *fc1 = pearl_layer_create_fully_connected(1000, 2);
+    pearl_layer_add_child(&input_layer, &fc1);
+    pearl_layer *fc2 = pearl_layer_create_fully_connected(1000, 1000);
+    pearl_layer_add_child(&fc1, &fc2);
+    pearl_layer *output_layer = pearl_layer_create_fully_connected(1, 1000);
+    output_layer->activation = pearl_activation_create(pearl_activation_function_type_sigmoid);
+    pearl_layer_add_child(&fc2, &output_layer);
+    network->output_layer = output_layer;
     network->learning_rate = 0.1;
 
     pearl_tensor *input = pearl_tensor_create(2, 4, 2);
@@ -29,22 +33,13 @@ int main()
     }
 
     double loss;
+    clock_t t1, t2;
     t1 = clock();
     for (int i = 0; i < 1000; i++) {
         loss = pearl_network_train_epoch(&network, input, output);
     }
     t2 = clock();
-    long elapsed = ((double)t2 - t1) / CLOCKS_PER_SEC * 1000.0;
-    //pearl_tensor *output_pred = pearl_network_calculate(&network, input);
-    //pearl_tensor_reduce_dimension(&output_pred, 1);
-    //pearl_tensor_reduce_dimension(&output, 1);
-    //double accuracy = pearl_util_accuracy(output, output_pred);
-    printf("----------------\nLoss=%f  Accuracy=%3.2f (%ld ms)\n----------------\n", loss, 0.0, elapsed);
-
-    pearl_network_destroy(&network);
-    pearl_tensor_destroy(&input);
-    pearl_tensor_destroy(&output);
-    //pearl_tensor_destroy(&output_pred);*/
+    printf("----------------\nLoss=%f (%ld ms)\n----------------\n", loss, (long)(((double)t2 - t1) / CLOCKS_PER_SEC * 1000));
 
     return 0;
 }

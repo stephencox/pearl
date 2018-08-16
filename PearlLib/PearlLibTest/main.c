@@ -96,7 +96,7 @@ static MunitResult test_network_add_layers(const MunitParameter params[], void *
     munit_assert_int(data_fc->biases->size[0], ==, 5);
     munit_assert_not_null(data_fc->biases->data);
     for (unsigned int i = 0; i < data_fc->biases->size[0]; i++) {
-        munit_assert_int(data_fc->biases->data[i], ==, 0.0);
+        munit_assert_double_equal(data_fc->biases->data[i], 0.0, 15);
     }
 
     pearl_layer *output = pearl_layer_create_fully_connected(1, 5);
@@ -200,43 +200,43 @@ static MunitResult test_network_epoch_check(const MunitParameter params[], void 
     double loss = pearl_network_train_epoch(&network, input, output);
     munit_assert_double_equal(loss, 0.7182439337288026, 15);
 
-    /*QVERIFY(qAbs(network->layers[0]->weights->data[0] + 0.2679348142022225) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[1] - 0.4848339319438247) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[2] + 0.6315295129156053) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[3] + 0.7420722005600799) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[4] - 1.3678618463245154) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[5] + 1.229933624737421) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[0] - 0.0766308057690951) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[1] + 1.004698165338342) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[2] + 0.1505549847294349) < 1e-15);
+    munit_assert_double_equal(fc_data->weights->data[0], -0.2679348142022225, 15);
+    munit_assert_double_equal(fc_data->weights->data[1], 0.4848339319438247, 15);
+    munit_assert_double_equal(fc_data->weights->data[2], -0.6315295129156053, 15);
+    munit_assert_double_equal(fc_data->weights->data[3], -0.7420722005600799, 15);
+    munit_assert_double_equal(fc_data->weights->data[4], 1.3678618463245154, 15);
+    munit_assert_double_equal(fc_data->weights->data[5], -1.229933624737421, 15);
+    munit_assert_double_equal(output_data->weights->data[0], 0.0766308057690951, 15);
+    munit_assert_double_equal(output_data->weights->data[1], -1.004698165338342, 15);
+    munit_assert_double_equal(output_data->weights->data[2], -0.1505549847294349, 15);
 
-    QVERIFY(qAbs(network->layers[0]->biases->data[0] + 1.3171855204123333e-5) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->biases->data[1] - 0.0) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->biases->data[2] + 2.4724469075790463e-4) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->biases->data[0] - 0.0012500486106543) < 1e-15);
+    munit_assert_double_equal(fc_data->biases->data[0], -1.3171855204123333e-5, 15);
+    munit_assert_double_equal(fc_data->biases->data[1], 0.0, 15);
+    munit_assert_double_equal(fc_data->biases->data[2], -2.4724469075790463e-4, 15);
+    munit_assert_double_equal(output_data->biases->data[0], 0.0012500486106543, 15);
 
     loss = pearl_network_train_epoch(&network, input, output);
-    QVERIFY(qAbs(loss - 0.7150801771957616) < 1e-15);
+    munit_assert_double_equal(loss, 0.7150801771957616, 15);
 
-    QVERIFY(qAbs(network->layers[0]->weights->data[0] + 0.2688913302831794) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[1] - 0.4848169107220069) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[2] + 0.6315295129156053) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[3] + 0.7420722005600799) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[4] - 1.3676672556820724) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->weights->data[5] + 1.2280543770573713) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[0] - 0.0798675160482573) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[1] + 1.004698165338342) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->weights->data[2] + 0.1334351602381933) < 1e-15);
+    munit_assert_double_equal(fc_data->weights->data[0], -0.2688913302831794, 15);
+    munit_assert_double_equal(fc_data->weights->data[1], 0.4848169107220069, 15);
+    munit_assert_double_equal(fc_data->weights->data[2], -0.6315295129156053, 15);
+    munit_assert_double_equal(fc_data->weights->data[3], -0.7420722005600799, 15);
+    munit_assert_double_equal(fc_data->weights->data[4], 1.3676672556820724, 15);
+    munit_assert_double_equal(fc_data->weights->data[5], -1.2280543770573713, 15);
+    munit_assert_double_equal(output_data->weights->data[0], 0.0798675160482573, 15);
+    munit_assert_double_equal(output_data->weights->data[1], -1.004698165338342, 15);
+    munit_assert_double_equal(output_data->weights->data[2], -0.1334351602381933, 15);
 
-    QVERIFY(qAbs(network->layers[0]->biases->data[0] + 3.0193077021853888e-5) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->biases->data[1] - 0.0) < 1e-15);
-    QVERIFY(qAbs(network->layers[0]->biases->data[2] + 4.4183533320092531e-4) < 1e-15);
-    QVERIFY(qAbs(network->layers[1]->biases->data[0] - 0.0022947400840857) < 1e-15);
+    munit_assert_double_equal(fc_data->biases->data[0], -3.0193077021853888e-5, 15);
+    munit_assert_double_equal(fc_data->biases->data[1], 0.0, 15);
+    munit_assert_double_equal(fc_data->biases->data[2], -4.4183533320092531e-4, 15);
+    munit_assert_double_equal(output_data->biases->data[0], 0.0022947400840857, 15);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
-    */
+
     return MUNIT_OK;
 }
 

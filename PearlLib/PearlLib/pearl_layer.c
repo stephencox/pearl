@@ -8,6 +8,10 @@ pearl_layer *pearl_layer_create()
     layer->num_parent_layers = 0;
     layer->parent_layers = NULL;
     layer->layer_data = NULL;
+    layer->a = NULL;
+    layer->da = NULL;
+    layer->dz = NULL;
+    layer->z = NULL;
     return layer;
 }
 
@@ -184,7 +188,7 @@ void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer)
             break;
     }
     for (unsigned int i = 0; i < (*parent_layer)->num_parent_layers; i++) {
-        pearl_layer_backward(&(*parent_layer)->parent_layers[i], parent_layer);
+        pearl_layer_backward(parent_layer, &(*parent_layer)->parent_layers[i]);
     }
 
 
@@ -193,7 +197,7 @@ void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer)
 void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer)
 {
     /* Calculate dZ backward with activation derivative */
-    assert((*parent_layer)->layer_data != NULL);
+    assert((*child_layer)->layer_data != NULL);
     pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
     assert((*child_layer)->da != NULL);
     assert((*parent_layer)->a != NULL);
@@ -208,7 +212,7 @@ void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer
             assert(ARRAY_IDX_2D(j, x, (*child_layer)->z->size[0]) < (*child_layer)->z->size[0] * (*child_layer)->z->size[1]);
             assert(ARRAY_IDX_2D(x, j, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
             assert(ARRAY_IDX_2D(x, j, (*child_layer)->da->size[1]) < (*child_layer)->da->size[0] * (*child_layer)->da->size[1]);
-            (*child_layer)->dz->data[ARRAY_IDX_2D(x, j, (*child_layer)->dz->size[1])] = (*child_layer)->activation.calculate_derivative((*parent_layer)->z->data[ARRAY_IDX_2D(x, j, (*parent_layer)->z->size[1])]) * (*child_layer)->da->data[ARRAY_IDX_2D(x, j, (*child_layer)->da->size[1])];
+            (*child_layer)->dz->data[ARRAY_IDX_2D(x, j, (*child_layer)->dz->size[1])] = (*child_layer)->activation.calculate_derivative((*child_layer)->z->data[ARRAY_IDX_2D(x, j, (*child_layer)->z->size[1])]) * (*child_layer)->da->data[ARRAY_IDX_2D(x, j, (*child_layer)->da->size[1])];
         }
     }
 
@@ -246,12 +250,12 @@ void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer
     }
     /* Calculate dA of parent layer */
     for (unsigned int i = 0; i < data->weights->size[1]; i++) {
-        for (unsigned int j = 0; j < (*child_layer)->da->size[1]; j++) {
+        for (unsigned int j = 0; j < (*child_layer)->dz->size[1]; j++) {
             double sum_w = 0.0;
             for (unsigned int k = 0; k < data->weights->size[0]; k++) {
                 assert(ARRAY_IDX_2D(k, i, data->weights->size[1]) < data->weights->size[0] * data->weights->size[1]);
-                assert(ARRAY_IDX_2D(k, j, (*child_layer)->da->size[1]) < (*child_layer)->da->size[0] * (*child_layer)->da->size[1]);
-                sum_w += data->weights->data[ARRAY_IDX_2D(k, i, data->weights->size[1])] * (*child_layer)->da->data[ARRAY_IDX_2D(k, j, (*child_layer)->da->size[1])];
+                assert(ARRAY_IDX_2D(k, j, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
+                sum_w += data->weights->data[ARRAY_IDX_2D(k, i, data->weights->size[1])] * (*child_layer)->dz->data[ARRAY_IDX_2D(k, j, (*child_layer)->da->size[1])];
             }
             assert(ARRAY_IDX_2D(i, j, (*parent_layer)->da->size[1]) < (*parent_layer)->da->size[0] * (*parent_layer)->da->size[1]);
             (*parent_layer)->da->data[ARRAY_IDX_2D(i, j, (*parent_layer)->da->size[1])] = sum_w;
@@ -260,17 +264,34 @@ void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer
 }
 
 
-void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate)
+void pearl_layer_update(pearl_layer **child_layer, double learning_rate)
 {
-    /*assert(layer->weights->dimension == 2);
-    assert(layer->weights->size[0] == dw->size[0]);
-    assert(layer->weights->size[1] == dw->size[1]);
-    for (unsigned int i = 0; i < layer->weights->size[0]; i++) {
-        for (unsigned int j = 0; j < layer->weights->size[1]; j++) {
-            layer->weights->data[ARRAY_IDX_2D(i, j, layer->weights->size[1])] -= learning_rate * dw->data[ARRAY_IDX_2D(i, j, dw->size[1])];
+    switch ((*child_layer)->type) {
+        case pearl_layer_type_input:
+            break;
+        case pearl_layer_type_fully_connected:
+            pearl_layer_update_fully_connected(child_layer, learning_rate);
+            break;
+        case pearl_layer_type_dropout:
+            break;
+    }
+    for (unsigned int i = 0; i < (*child_layer)->num_child_layers; i++) {
+        pearl_layer_update(&(*child_layer)->child_layers[i], learning_rate);
+    }
+}
+
+void pearl_layer_update_fully_connected(pearl_layer **child_layer, double learning_rate)
+{
+    pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
+    assert(data->weights->dimension == 2);
+    assert(data->weights->size[0] == data->dw->size[0]);
+    assert(data->weights->size[1] == data->dw->size[1]);
+    for (unsigned int i = 0; i < data->weights->size[0]; i++) {
+        for (unsigned int j = 0; j < data->weights->size[1]; j++) {
+            data->weights->data[ARRAY_IDX_2D(i, j, data->weights->size[1])] -= learning_rate * data->dw->data[ARRAY_IDX_2D(i, j, data->dw->size[1])];
         }
     }
-    for (unsigned int i = 0; i < layer->biases->size[0]; i++) {
-        layer->biases->data[i] -= learning_rate * db->data[i];
-    }*/
+    for (unsigned int i = 0; i < data->biases->size[0]; i++) {
+        data->biases->data[i] -= learning_rate * data->db->data[i];
+    }
 }

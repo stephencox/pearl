@@ -10,6 +10,7 @@ PEARL_API pearl_network *pearl_network_create()
     network->version.major = PEARL_NETWORK_VERSION_MAJOR;
     network->version.minor = PEARL_NETWORK_VERSION_MINOR;
     network->version.revision = PEARL_NETWORK_VERSION_REVISION;
+    network->input_layer = NULL;
     return network;
 }
 
@@ -38,29 +39,11 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
     //Backward
     pearl_network_backward(network, output);
 
-    /*
     //Update
-    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-        pearl_layer_update((*network)->layers[i], dw[i], db[i], (*network)->learning_rate);
+    for (unsigned int i = 0; i < (*network)->input_layer->num_child_layers; i++) {
+        pearl_layer_update(&(*network)->input_layer->child_layers[i], (*network)->learning_rate);
     }
-    // Clean
-    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-        pearl_tensor_destroy(&a[i]);
-        pearl_tensor_destroy(&z[i]);
-        pearl_tensor_destroy(&dw[i]);
-        pearl_tensor_destroy(&db[i]);
-        pearl_tensor_destroy(&dA[i]);
-        pearl_tensor_destroy(&dZ[i]);
-    }
-    pearl_tensor_destroy(&a[(*network)->num_layers]);
-    pearl_tensor_destroy(&dA[(*network)->num_layers]);
-    free(a);
-    free(z);
-    free(dw);
-    free(db);
-    free(dA);
-    free(dZ);
-    */
+
     return cost;
 
 }

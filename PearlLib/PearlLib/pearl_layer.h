@@ -48,13 +48,14 @@ typedef struct {
 pearl_layer *pearl_layer_create();
 void pearl_layer_destroy(pearl_layer **layer);
 PEARL_API void pearl_layer_add_child(pearl_layer **parent, pearl_layer **child);
-pearl_layer *pearl_layer_create_input(unsigned int num_neurons);
-pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsigned int num_neurons_prev_layer);
-pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons);
+PEARL_API pearl_layer *pearl_layer_create_input(unsigned int num_neurons);
+PEARL_API pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsigned int num_neurons_prev_layer);
+PEARL_API pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons);
 void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer);
 void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer);
-void pearl_layer_update(pearl_layer *layer, pearl_tensor *dw, pearl_tensor *db, double learning_rate);
+void pearl_layer_update(pearl_layer **child_layer, double learning_rate);
+void pearl_layer_update_fully_connected(pearl_layer **child_layer, double learning_rate);
 
 #endif // PEARL_LAYER_H

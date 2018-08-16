@@ -53,7 +53,6 @@ void pearl_json_layer_serialise(pearl_layer *layer, JSON_Object **parent)
     layer->type = (pearl_layer_type)json_object_get_number(obj, "type");
     layer->biases = pearl_json_tensor_deserialise(json_object_get_value(obj, "biases"));
     layer->weights = pearl_json_tensor_deserialise(json_object_get_value(obj, "weights"));*/
-    return layer;
 }
 
 PEARL_API void pearl_json_network_serialise(const char *filename, const pearl_network *network)
