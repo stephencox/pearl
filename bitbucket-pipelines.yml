@@ -1,4 +1,4 @@
-image: rabits/qt:5.11-desktop
+image: gcc:latest
 pipelines:
   branches:
     master:
@@ -7,12 +7,13 @@ pipelines:
             - cat /etc/*-release
             - uname -a
             - grep -i processor /proc/cpuinfo | wc -l
+            - apt-get update
+            - apt-get install -y cmake
+            - apt-get install -y gperf
             - gcc --version
-            - git submodule update --init --recursive
+            - cmake --version
             - mkdir build
             - cd build
-            - qmake --version
-            - qmake ../PearlLib/PearlLib.pro
-            - make -j$(nproc)
-            - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"PearlLib"
-            - PearlLibTest/tst_pearllib_network
+            - cmake ..
+            - make
+            - pearl-test
