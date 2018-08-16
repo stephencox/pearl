@@ -4,7 +4,6 @@ pipelines:
     master:
       - step:
           script:
-            - cat /etc/*-release
             - uname -a
             - grep -i processor /proc/cpuinfo | wc -l
             - swupd bundle-add c-basic git
