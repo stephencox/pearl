@@ -127,14 +127,17 @@ static MunitResult test_network_save_load(const MunitParameter params[], void *d
 {
     (void) params;
     (void) data;
-    /*pearl_network *network = pearl_network_create(10, 1);
-    pearl_network_layer_add_fully_connect(&network, 5, pearl_activation_function_type_relu);
-    pearl_network_layer_add_output(&network, pearl_activation_function_type_sigmoid);
-    pearl_network_layers_initialise(&network);
+    pearl_network *network = pearl_network_create();
+    pearl_layer *input = pearl_layer_create_input(5);
+    network->input_layer = input;
+    pearl_layer *drop = pearl_layer_create_dropout(5);
+    pearl_layer_add_child(&input, &drop);
+    pearl_layer *fc = pearl_layer_create_fully_connected(5, 1);
+    pearl_layer_add_child(&drop, &fc);
     pearl_json_network_serialise("network.json", network);
     pearl_network_destroy(&network);
 
-    pearl_network *network_load = pearl_json_network_deserialise("network.json");
+    /*pearl_network *network_load = pearl_json_network_deserialise("network.json");
     QVERIFY(network_load != NULL);
     QVERIFY(network_load->layers[0]->weights != NULL);
     QCOMPARE(network_load->layers[0]->weights->dimension, 2);
