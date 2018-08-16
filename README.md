@@ -16,8 +16,8 @@
     * AdaGrad
 * Add more layer types
     * Dropout
+    * Pooling
 * Add other computational methods
     * blas
     * cuda
-    * OpenCL
 
