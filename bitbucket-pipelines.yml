@@ -17,4 +17,4 @@ pipelines:
             - cd build
             - cmake ..
             - make
-            - pearl-test
+            - ./pearl-test
