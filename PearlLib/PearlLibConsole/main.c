@@ -12,7 +12,7 @@ int main()
     pearl_layer *fc2 = pearl_layer_create_fully_connected(100, 100);
     pearl_layer_add_child(&fc1, &fc2);
     pearl_layer *output_layer = pearl_layer_create_fully_connected(1, 100);
-    output_layer->activation = pearl_activation_create(pearl_activation_function_type_sigmoid);
+    output_layer->activation = pearl_activation_create(pearl_activation_type_sigmoid);
     pearl_layer_add_child(&fc2, &output_layer);
     network->output_layer = output_layer;
     network->learning_rate = 0.1;

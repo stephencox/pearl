@@ -93,7 +93,7 @@ pearl_layer *pearl_layer_create_input(unsigned int num_neurons)
 {
     pearl_layer *layer = pearl_layer_create();
     layer->type = pearl_layer_type_input;
-    layer->activation = pearl_activation_create(pearl_activation_function_type_linear);
+    layer->activation = pearl_activation_create(pearl_activation_type_linear);
     layer->num_neurons = num_neurons;
     return layer;
 }
@@ -102,7 +102,7 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
 {
     pearl_layer *layer = pearl_layer_create();
     layer->type = pearl_layer_type_fully_connected;
-    layer->activation = pearl_activation_create(pearl_activation_function_type_relu);
+    layer->activation = pearl_activation_create(pearl_activation_type_relu);
     layer->num_neurons = num_neurons;
     pearl_layer_data_fully_connected *data = malloc(sizeof(pearl_layer_data_fully_connected));
     data->biases = pearl_tensor_create(1, layer->num_neurons);
@@ -111,6 +111,21 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
     for (unsigned int i = 0; i < data->weights->size[0] * data->weights->size[1]; i++) {
         data->weights->data[i] = pearl_util_rand_norm(0.0, var);
     }
+    data->db = NULL;
+    data->dw = NULL;
+    layer->layer_data = data;
+    return layer;
+}
+
+pearl_layer *pearl_layer_create_fully_connected_blank(unsigned int num_neurons)
+{
+    pearl_layer *layer = pearl_layer_create();
+    layer->type = pearl_layer_type_fully_connected;
+    layer->activation = pearl_activation_create(pearl_activation_type_relu);
+    layer->num_neurons = num_neurons;
+    pearl_layer_data_fully_connected *data = malloc(sizeof(pearl_layer_data_fully_connected));
+    data->biases = NULL;
+    data->weights = NULL;
     data->db = NULL;
     data->dw = NULL;
     layer->layer_data = data;

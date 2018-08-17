@@ -89,16 +89,7 @@ void pearl_network_backward(pearl_network **network, const pearl_tensor *output)
 
 PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input)
 {
-    /*pearl_tensor **z = calloc((*network)->num_layers, sizeof(pearl_tensor *));
-    pearl_tensor **a = calloc((*network)->num_layers + 1, sizeof(pearl_tensor *));
-    pearl_network_forward(network, input, z, a);
-    pearl_tensor *output = pearl_tensor_copy(a[(*network)->num_layers]);
-    for (unsigned int i = 0; i < (*network)->num_layers; i++) {
-        pearl_tensor_destroy(&a[i]);
-        pearl_tensor_destroy(&z[i]);
-    }
-    pearl_tensor_destroy(&a[(*network)->num_layers]);
-    free(a);
-    free(z);
-    return output;*/
+    pearl_network_forward(network, input);
+    pearl_tensor *output = pearl_tensor_copy((*network)->output_layer->a);
+    return output;
 }

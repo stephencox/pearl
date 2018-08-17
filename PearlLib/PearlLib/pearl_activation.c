@@ -1,23 +1,23 @@
-#include <pearl_activation_function.h>
+#include <pearl_activation.h>
 
-pearl_activation pearl_activation_create(pearl_activation_function_type type)
+pearl_activation pearl_activation_create(pearl_activation_type type)
 {
     pearl_activation activation;
     activation.type = type;
     switch (type) {
-        case pearl_activation_function_type_linear:
+        case pearl_activation_type_linear:
             activation.calculate = &pearl_activation_function_linear;
             activation.calculate_derivative = &pearl_activation_function_derivative_linear;
             break;
-        case pearl_activation_function_type_relu:
+        case pearl_activation_type_relu:
             activation.calculate = &pearl_activation_function_relu;
             activation.calculate_derivative = &pearl_activation_function_derivative_relu;
             break;
-        case pearl_activation_function_type_tanh:
+        case pearl_activation_type_tanh:
             activation.calculate = &pearl_activation_function_tanh;
             activation.calculate_derivative = &pearl_activation_function_derivative_tanh;
             break;
-        case pearl_activation_function_type_sigmoid:
+        case pearl_activation_type_sigmoid:
             activation.calculate = &pearl_activation_function_sigmoid;
             activation.calculate_derivative = &pearl_activation_function_derivative_sigmoid;
             break;
