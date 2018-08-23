@@ -79,7 +79,7 @@ void pearl_json_layer_fully_connected_deserialise(JSON_Object *obj, pearl_layer_
     }
     JSON_Value *weights = json_object_get_value(obj, "weights");
     if (weights != NULL) {
-        (*data)->biases = pearl_json_tensor_deserialise(weights);
+        (*data)->weights = pearl_json_tensor_deserialise(weights);
     }
 }
 
@@ -164,10 +164,6 @@ JSON_Value *pearl_json_tensor_serialise(pearl_tensor *tensor)
 pearl_tensor *pearl_json_tensor_deserialise(JSON_Value *json)
 {
     JSON_Object *obj = json_value_get_object(json);
-    JSON_Value *tensor_version = json_object_get_value(obj, "version");
-    if (tensor_version == NULL) {
-        return NULL;
-    }
     pearl_tensor *tensor = malloc(sizeof(pearl_tensor));
     tensor->dimension = (unsigned int)json_object_get_number(obj, "dimension");
     JSON_Value *tensor_size_array = json_object_get_value(obj, "size");

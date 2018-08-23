@@ -179,8 +179,8 @@ static MunitResult test_network_save_load(const MunitParameter params[], void *d
     munit_assert_not_null(drop_load->child_layers[0]);
     pearl_layer *fc_load = drop_load->child_layers[0];
     munit_assert_int(fc_load->type, ==, pearl_layer_type_fully_connected);
-    munit_assert_int(fc_load->num_child_layers, ==, 1);
-    munit_assert_not_null(fc_load->child_layers);
+    munit_assert_int(fc_load->num_child_layers, ==, 0);
+    munit_assert_null(fc_load->child_layers);
     munit_assert_int(fc_load->num_parent_layers, ==, 1);
     munit_assert_not_null(fc_load->parent_layers);
     munit_assert_not_null(fc_load->parent_layers[0]);
