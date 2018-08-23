@@ -6,7 +6,7 @@ pipelines:
           script:
             - uname -a
             - grep -i processor /proc/cpuinfo | wc -l
-            - apk update && apk add --no-cache gcc git cmake
+            - apk update && apk add --no-cache gcc git cmake build-base
             - gcc --version
             - cmake --version
             - git submodule update --init
