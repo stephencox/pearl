@@ -56,11 +56,11 @@ void pearl_json_layer_deserialise(JSON_Value *json, pearl_layer **parent)
             break;
         case pearl_layer_type_fully_connected:
             (*parent) = pearl_layer_create_fully_connected_blank(layer_num_neurons);
-            pearl_json_layer_fully_connected_deserialise(obj, &(pearl_layer_data_fully_connected *)(*parent)->layer_data);
+            pearl_json_layer_fully_connected_deserialise(obj, (pearl_layer_data_fully_connected **) & (*parent)->layer_data);
             break;
         case pearl_layer_type_dropout:
             (*parent) = pearl_layer_create_dropout(layer_num_neurons);
-            pearl_json_layer_dropout_deserialise(obj, &(pearl_layer_data_dropout *)(*parent)->layer_data);
+            pearl_json_layer_dropout_deserialise(obj, (pearl_layer_data_dropout **) & (*parent)->layer_data);
             break;
     }
     (*parent)->activation = pearl_activation_create(layer_activation_type);
