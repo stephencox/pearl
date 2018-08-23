@@ -10,7 +10,7 @@ include_directories(PearlLib/PearlLib)
 
 add_library(pearl
         external/parson/parson.c
-        PearlLib/PearlLib/pearl_activation_function.c
+        PearlLib/PearlLib/pearl_activation.c
         PearlLib/PearlLib/pearl_json.c
         PearlLib/PearlLib/pearl_layer.c
         PearlLib/PearlLib/pearl_loss.c
