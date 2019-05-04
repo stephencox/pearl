@@ -4,3 +4,9 @@
 [submodule "external/munit"]
 	path = external/munit
 	url = https://github.com/nemequ/munit.git
+[submodule "external/log.c"]
+	path = external/log.c
+	url = https://github.com/rxi/log.c
+[submodule "external/Unity"]
+	path = external/Unity
+	url = https://github.com/ThrowTheSwitch/Unity

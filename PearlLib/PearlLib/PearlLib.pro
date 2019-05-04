@@ -16,6 +16,9 @@ HEADERS += pearl_optimiser.h pearl_network.h pearl_layer.h pearl_global.h \
 # PARSON
 SOURCES += ../../external/parson/parson.c
 INCLUDEPATH += ../../external/parson
+# LOG.C
+SOURCES += ../../external/log.c/src/log.c
+INCLUDEPATH += ../../external/log.c/src
 
 linux: {
     QMAKE_CFLAGS_RELEASE += -march=native
