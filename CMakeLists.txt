@@ -25,3 +25,6 @@ add_executable(pearl-test PearlLib/PearlLibTest/main.c external/munit/munit.c)
 target_link_libraries(pearl-test pearl m)
 
 add_test(NAME test COMMAND pearl-test)
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
