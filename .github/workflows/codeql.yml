@@ -11,11 +11,6 @@ on:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    # Runner size impacts CodeQL analysis time. To learn more, please see:
-    #   - https://gh.io/recommended-hardware-resources-for-running-codeql
-    #   - https://gh.io/supported-runners-and-hardware-resources
-    #   - https://gh.io/using-larger-runners (GitHub.com only)
-    # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
     permissions:
@@ -36,7 +31,7 @@ jobs:
         - language: c-cpp
           build-mode: manual
           queries: security-and-quality
-          packs: cpp-all,cpp-queries,cpp-upgrades
+          packs: codeql/cpp-all,codeql/cpp-queries,codeql/cpp-upgrades
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
