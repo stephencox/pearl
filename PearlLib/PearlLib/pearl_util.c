@@ -2,13 +2,17 @@
 
 double pearl_util_rand_norm(double mu, double sigma)
 {
-    double U1, U2, W, mult;
-    static double X1, X2;
+    double U1;
+    double U2;
+    double W;
+    double mult;
+    static double X1;
+    static double X2;
     static int call = 0;
 
     if (call == 1) {
         call = !call;
-        return (mu + sigma * (double) X2);
+        return (mu + sigma * X2);
     }
 
     do {
@@ -24,10 +28,10 @@ double pearl_util_rand_norm(double mu, double sigma)
 
     call = !call;
 
-    return (mu + sigma * (double) X1);
+    return (mu + sigma * X1);
 }
 
-double pearl_util_accuracy(pearl_tensor *output, pearl_tensor *pred)
+double pearl_util_accuracy(const pearl_tensor *output, pearl_tensor *pred)
 {
     assert(output->dimension == pred->dimension);
     assert(output->dimension == 1);

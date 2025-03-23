@@ -162,8 +162,8 @@ void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer)
 
 void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer)
 {
-    pearl_tensor *input = (*parent_layer)->a;
-    pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
+    const pearl_tensor *input = (*parent_layer)->a;
+    const pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
     if ((*child_layer)->z == NULL) {
         (*child_layer)->z = pearl_tensor_create(2, data->weights->size[0], input->size[1]);
     }

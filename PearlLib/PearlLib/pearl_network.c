@@ -33,7 +33,7 @@ PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_
     pearl_network_forward(network, input);
 
     // Cost
-    pearl_tensor *al = (*network)->output_layer->a;
+    const pearl_tensor *al = (*network)->output_layer->a;
     double cost = pearl_loss_cost((*network)->loss, output, al);
 
     //Backward

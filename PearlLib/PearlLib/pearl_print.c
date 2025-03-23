@@ -18,39 +18,25 @@ void pearl_print_layer(const pearl_layer *layer)
         }
         printf("\n");
 
-        /*printf("Activation: ");
-        switch (layer->activation_function) {
-            case pearl_activation_function_type_linear:
+        printf("Activation: ");
+        switch (layer->activation.type) {
+            case pearl_activation_type_linear:
                 printf("Linear");
                 break;
-            case pearl_activation_function_type_sigmoid:
+            case pearl_activation_type_sigmoid:
                 printf("Sigmoid");
                 break;
-            case pearl_activation_function_type_tanh:
+            case pearl_activation_type_tanh:
                 printf("Tanh");
+                break;
+            case pearl_activation_type_relu:
+                printf("ReLU");
                 break;
             default:
                 printf("None");
                 break;
         }
         printf("\n");
-
-        printf("Weights:\n");
-        if (layer->weights) {
-            pearl_print_tensor(layer->weights);
-        }
-        else {
-            printf("None\n");
-        }
-
-        printf("Biases: ");
-        if (layer->biases) {
-            pearl_print_tensor(layer->biases);
-        }
-        else {
-            printf("None");
-        }
-        printf("\n");*/
 
     }
     else {
