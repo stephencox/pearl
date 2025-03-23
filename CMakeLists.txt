@@ -7,21 +7,21 @@ enable_testing()
 
 include_directories(external/Unity/src)
 include_directories(external/parson)
-include_directories(PearlLib/PearlLib)
+include_directories(src)
 
 add_library(pearl
         external/parson/parson.c
-        PearlLib/PearlLib/pearl_activation.c
-        PearlLib/PearlLib/pearl_json.c
-        PearlLib/PearlLib/pearl_layer.c
-        PearlLib/PearlLib/pearl_loss.c
-        PearlLib/PearlLib/pearl_network.c
-        PearlLib/PearlLib/pearl_print.c
-        PearlLib/PearlLib/pearl_tensor.c
-        PearlLib/PearlLib/pearl_util.c
-        PearlLib/PearlLib/pearl_version.c)
+        src/pearl_activation.c
+        src/pearl_json.c
+        src/pearl_layer.c
+        src/pearl_loss.c
+        src/pearl_network.c
+        src/pearl_print.c
+        src/pearl_tensor.c
+        src/pearl_util.c
+        src/pearl_version.c)
 
-add_executable(pearl-test PearlLib/PearlLibTest/main.c external/Unity/src/unity.c)
+add_executable(pearl-test test/main.c external/Unity/src/unity.c)
 
 target_link_libraries(pearl-test pearl m)
 
