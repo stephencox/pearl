@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 enable_testing()
 
-include_directories(external/munit)
+include_directories(external/Unity/src)
 include_directories(external/parson)
 include_directories(PearlLib/PearlLib)
 
@@ -21,7 +21,7 @@ add_library(pearl
         PearlLib/PearlLib/pearl_util.c
         PearlLib/PearlLib/pearl_version.c)
 
-add_executable(pearl-test PearlLib/PearlLibTest/main.c external/munit/munit.c)
+add_executable(pearl-test PearlLib/PearlLibTest/main.c external/Unity/src/unity.c)
 
 target_link_libraries(pearl-test pearl m)
 

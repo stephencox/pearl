@@ -1,132 +1,132 @@
-#include <munit.h>
+#include "unity.h"
 #include <pearl_network.h>
 #include <pearl_json.h>
 #include <pearl_print.h>
 
-static MunitResult test_network_create(const MunitParameter params[], void *data)
+void setUp(void)
 {
-    (void) params;
-    (void) data;
-    pearl_network *network = pearl_network_create();
-    munit_assert_not_null(network);
-    munit_assert_null(network->input_layer);
-    munit_assert_float(network->learning_rate, ==, 1e-3);
-    munit_assert_int(network->loss.type, ==, pearl_loss_binary_cross_entropy);
-    munit_assert_int(network->optimiser, ==, pearl_optimiser_sgd);
-    munit_assert_uint(network->version.major, ==, PEARL_NETWORK_VERSION_MAJOR);
-    munit_assert_uint(network->version.minor, ==, PEARL_NETWORK_VERSION_MINOR);
-    munit_assert_uint(network->version.revision, ==, PEARL_NETWORK_VERSION_REVISION);
-    pearl_network_destroy(&network);
-    munit_assert_null(network);
-    return MUNIT_OK;
 }
 
-static MunitResult test_network_add_layers(const MunitParameter params[], void *data)
+void tearDown(void)
 {
-    (void) params;
-    (void) data;
+}
+
+void test_network_create()
+{
+    pearl_network *network = pearl_network_create();
+    TEST_ASSERT_NOT_NULL(network);
+    TEST_ASSERT_NULL(network->input_layer);
+    TEST_ASSERT_EQUAL_FLOAT(network->learning_rate, 1e-3);
+    TEST_ASSERT_EQUAL_INT(network->loss.type, pearl_loss_binary_cross_entropy);
+    TEST_ASSERT_EQUAL_INT(network->optimiser, pearl_optimiser_sgd);
+    TEST_ASSERT_EQUAL_UINT(network->version.major, PEARL_NETWORK_VERSION_MAJOR);
+    TEST_ASSERT_EQUAL_UINT(network->version.minor, PEARL_NETWORK_VERSION_MINOR);
+    TEST_ASSERT_EQUAL_UINT(network->version.revision, PEARL_NETWORK_VERSION_REVISION);
+    pearl_network_destroy(&network);
+    TEST_ASSERT_NULL(network);
+}
+
+void test_network_add_layers()
+{
     pearl_network *network = pearl_network_create();
     pearl_layer *input = pearl_layer_create_input(5);
     network->input_layer = input;
-    munit_assert_int(input->type, ==, pearl_layer_type_input);
-    munit_assert_int(input->num_child_layers, ==, 0);
-    munit_assert_null(input->child_layers);
-    munit_assert_int(input->num_parent_layers, ==, 0);
-    munit_assert_null(input->parent_layers);
-    munit_assert_null(input->layer_data);
-    munit_assert_int(input->num_neurons, ==, 5);
-    munit_assert_int(input->activation.type, ==, pearl_activation_type_linear);
+    TEST_ASSERT_EQUAL_INT(input->type, pearl_layer_type_input);
+    TEST_ASSERT_EQUAL_INT(input->num_child_layers, 0);
+    TEST_ASSERT_NULL(input->child_layers);
+    TEST_ASSERT_EQUAL_INT(input->num_parent_layers, 0);
+    TEST_ASSERT_NULL(input->parent_layers);
+    TEST_ASSERT_NULL(input->layer_data);
+    TEST_ASSERT_EQUAL_INT(input->num_neurons, 5);
+    TEST_ASSERT_EQUAL_INT(input->activation.type, pearl_activation_type_linear);
 
     pearl_layer *drop = pearl_layer_create_dropout(5);
     pearl_layer_add_child(&input, &drop);
-    munit_assert_int(input->num_parent_layers, ==, 0);
-    munit_assert_null(input->parent_layers);
-    munit_assert_int(input->num_child_layers, ==, 1);
-    munit_assert_not_null(input->child_layers);
-    munit_assert_not_null(input->child_layers[0]);
-    munit_assert_ptr_equal(input->child_layers[0], drop);
-    munit_assert_int(drop->type, ==, pearl_layer_type_dropout);
-    munit_assert_int(drop->num_child_layers, ==, 0);
-    munit_assert_null(drop->child_layers);
-    munit_assert_int(drop->num_parent_layers, ==, 1);
-    munit_assert_not_null(drop->parent_layers);
-    munit_assert_not_null(drop->parent_layers[0]);
-    munit_assert_int(drop->parent_layers[0]->type, ==, pearl_layer_type_input);
-    munit_assert_not_null(drop->layer_data);
+    TEST_ASSERT_EQUAL_INT(input->num_parent_layers, 0);
+    TEST_ASSERT_NULL(input->parent_layers);
+    TEST_ASSERT_EQUAL_INT(input->num_child_layers, 1);
+    TEST_ASSERT_NOT_NULL(input->child_layers);
+    TEST_ASSERT_NOT_NULL(input->child_layers[0]);
+    TEST_ASSERT_EQUAL_PTR(input->child_layers[0], drop);
+    TEST_ASSERT_EQUAL_INT(drop->type, pearl_layer_type_dropout);
+    TEST_ASSERT_EQUAL_INT(drop->num_child_layers, 0);
+    TEST_ASSERT_NULL(drop->child_layers);
+    TEST_ASSERT_EQUAL_INT(drop->num_parent_layers, 1);
+    TEST_ASSERT_NOT_NULL(drop->parent_layers);
+    TEST_ASSERT_NOT_NULL(drop->parent_layers[0]);
+    TEST_ASSERT_EQUAL_INT(drop->parent_layers[0]->type, pearl_layer_type_input);
+    TEST_ASSERT_NOT_NULL(drop->layer_data);
     const pearl_layer_data_dropout *data_drop = (pearl_layer_data_dropout *)drop->layer_data;
-    munit_assert_int(drop->num_neurons, ==, 5);
-    munit_assert_float(data_drop->rate, ==, 0.5);
-    munit_assert_int(data_drop->weights->dimension, ==, 1);
-    munit_assert_not_null(data_drop->weights->size);
-    munit_assert_int(data_drop->weights->size[0], ==, 5);
-    munit_assert_not_null(data_drop->weights->data);
+    TEST_ASSERT_EQUAL_INT(drop->num_neurons, 5);
+    TEST_ASSERT_EQUAL_FLOAT(data_drop->rate, 0.5);
+    TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
+    TEST_ASSERT_NOT_NULL(data_drop->weights->size);
+    TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
+    TEST_ASSERT_NOT_NULL(data_drop->weights->data);
     for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
-        munit_assert_float(data_drop->weights->data[i], ==, 0.0);
+        TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
     }
 
     pearl_layer *fc = pearl_layer_create_fully_connected(5, 1);
     pearl_layer_add_child(&drop, &fc);
-    munit_assert_int(drop->num_child_layers, ==, 1);
-    munit_assert_not_null(drop->child_layers);
-    munit_assert_not_null(drop->child_layers[0]);
-    munit_assert_ptr_equal(drop->child_layers[0], fc);
-    munit_assert_int(fc->type, ==, pearl_layer_type_fully_connected);
-    munit_assert_int(fc->num_child_layers, ==, 0);
-    munit_assert_null(fc->child_layers);
-    munit_assert_int(fc->num_parent_layers, ==, 1);
-    munit_assert_not_null(fc->parent_layers);
-    munit_assert_not_null(fc->parent_layers[0]);
-    munit_assert_int(fc->parent_layers[0]->type, ==, pearl_layer_type_dropout);
-    munit_assert_not_null(fc->layer_data);
+    TEST_ASSERT_EQUAL_INT(drop->num_child_layers, 1);
+    TEST_ASSERT_NOT_NULL(drop->child_layers);
+    TEST_ASSERT_NOT_NULL(drop->child_layers[0]);
+    TEST_ASSERT_EQUAL_PTR(drop->child_layers[0], fc);
+    TEST_ASSERT_EQUAL_INT(fc->type, pearl_layer_type_fully_connected);
+    TEST_ASSERT_EQUAL_INT(fc->num_child_layers, 0);
+    TEST_ASSERT_NULL(fc->child_layers);
+    TEST_ASSERT_EQUAL_INT(fc->num_parent_layers, 1);
+    TEST_ASSERT_NOT_NULL(fc->parent_layers);
+    TEST_ASSERT_NOT_NULL(fc->parent_layers[0]);
+    TEST_ASSERT_EQUAL_INT(fc->parent_layers[0]->type, pearl_layer_type_dropout);
+    TEST_ASSERT_NOT_NULL(fc->layer_data);
     const pearl_layer_data_fully_connected *data_fc = (pearl_layer_data_fully_connected *)fc->layer_data;
-    munit_assert_int(fc->num_neurons, ==, 5);
-    munit_assert_int(fc->activation.type, ==, pearl_activation_type_relu);
-    munit_assert_not_null(data_fc->weights);
-    munit_assert_int(data_fc->weights->dimension, ==, 2);
-    munit_assert_not_null(data_fc->weights->size);
-    munit_assert_int(data_fc->weights->size[0], ==, 5);
-    munit_assert_int(data_fc->weights->size[1], ==, 1);
-    munit_assert_not_null(data_fc->weights->data);
+    TEST_ASSERT_EQUAL_INT(fc->num_neurons, 5);
+    TEST_ASSERT_EQUAL_INT(fc->activation.type, pearl_activation_type_relu);
+    TEST_ASSERT_NOT_NULL(data_fc->weights);
+    TEST_ASSERT_EQUAL_INT(data_fc->weights->dimension, 2);
+    TEST_ASSERT_NOT_NULL(data_fc->weights->size);
+    TEST_ASSERT_EQUAL_INT(data_fc->weights->size[0], 5);
+    TEST_ASSERT_EQUAL_INT(data_fc->weights->size[1], 1);
+    TEST_ASSERT_NOT_NULL(data_fc->weights->data);
     for (unsigned int i = 0; i < data_fc->weights->size[0]; i++) {
-        munit_assert_float(data_fc->weights->data[i], !=, 0.0);
+        TEST_ASSERT_NOT_EQUAL_FLOAT(data_fc->weights->data[i], 0.0);
     }
-    munit_assert_not_null(data_fc->biases);
-    munit_assert_int(data_fc->biases->dimension, ==, 1);
-    munit_assert_not_null(data_fc->biases->size);
-    munit_assert_int(data_fc->biases->size[0], ==, 5);
-    munit_assert_not_null(data_fc->biases->data);
+    TEST_ASSERT_NOT_NULL(data_fc->biases);
+    TEST_ASSERT_EQUAL_INT(data_fc->biases->dimension, 1);
+    TEST_ASSERT_NOT_NULL(data_fc->biases->size);
+    TEST_ASSERT_EQUAL_INT(data_fc->biases->size[0], 5);
+    TEST_ASSERT_NOT_NULL(data_fc->biases->data);
     for (unsigned int i = 0; i < data_fc->biases->size[0]; i++) {
-        munit_assert_double_equal(data_fc->biases->data[i], 0.0, 15);
+        TEST_ASSERT_EQUAL_FLOAT(data_fc->biases->data[i], 0.0);
     }
 
     pearl_layer *output = pearl_layer_create_fully_connected(1, 5);
     output->activation = pearl_activation_create(pearl_activation_type_linear);
     pearl_layer_add_child(&fc, &output);
-    munit_assert_int(fc->num_child_layers, ==, 1);
-    munit_assert_not_null(fc->child_layers);
-    munit_assert_not_null(fc->child_layers[0]);
-    munit_assert_ptr_equal(fc->child_layers[0], output);
-    munit_assert_int(output->type, ==, pearl_layer_type_fully_connected);
-    munit_assert_int(output->num_child_layers, ==, 0);
-    munit_assert_null(output->child_layers);
-    munit_assert_int(output->num_parent_layers, ==, 1);
-    munit_assert_not_null(output->parent_layers);
-    munit_assert_not_null(output->parent_layers[0]);
-    munit_assert_int(output->parent_layers[0]->type, ==, pearl_layer_type_fully_connected);
-    munit_assert_not_null(output->layer_data);
-    munit_assert_not_null(output->layer_data);
-    munit_assert_int(output->num_neurons, ==, 1);
-    munit_assert_int(output->activation.type, ==, pearl_activation_type_linear);
+    TEST_ASSERT_EQUAL_INT(fc->num_child_layers, 1);
+    TEST_ASSERT_NOT_NULL(fc->child_layers);
+    TEST_ASSERT_NOT_NULL(fc->child_layers[0]);
+    TEST_ASSERT_EQUAL_PTR(fc->child_layers[0], output);
+    TEST_ASSERT_EQUAL_INT(output->type, pearl_layer_type_fully_connected);
+    TEST_ASSERT_EQUAL_INT(output->num_child_layers, 0);
+    TEST_ASSERT_NULL(output->child_layers);
+    TEST_ASSERT_EQUAL_INT(output->num_parent_layers, 1);
+    TEST_ASSERT_NOT_NULL(output->parent_layers);
+    TEST_ASSERT_NOT_NULL(output->parent_layers[0]);
+    TEST_ASSERT_EQUAL_INT(output->parent_layers[0]->type, pearl_layer_type_fully_connected);
+    TEST_ASSERT_NOT_NULL(output->layer_data);
+    TEST_ASSERT_NOT_NULL(output->layer_data);
+    TEST_ASSERT_EQUAL_INT(output->num_neurons, 1);
+    TEST_ASSERT_EQUAL_INT(output->activation.type, pearl_activation_type_linear);
 
     pearl_network_destroy(&network);
-    munit_assert_null(network);
-    return MUNIT_OK;
+    TEST_ASSERT_NULL(network);
 }
 
-static MunitResult test_network_save_load(const MunitParameter params[], void *data)
+void test_network_save_load()
 {
-    (void) params;
-    (void) data;
     pearl_network *network = pearl_network_create();
     pearl_layer *input = pearl_layer_create_input(5);
     network->input_layer = input;
@@ -138,83 +138,80 @@ static MunitResult test_network_save_load(const MunitParameter params[], void *d
     pearl_network_destroy(&network);
 
     pearl_network *network_load = pearl_json_network_deserialise("network.json");
-    munit_assert_not_null(network_load);
+    TEST_ASSERT_NOT_NULL(network_load);
 
-    munit_assert_not_null(network_load->input_layer);
+    TEST_ASSERT_NOT_NULL(network_load->input_layer);
     const pearl_layer *input_load = network_load->input_layer;
-    munit_assert_int(input_load->type, ==, pearl_layer_type_input);
-    munit_assert_int(input_load->num_parent_layers, ==, 0);
-    munit_assert_null(input_load->parent_layers);
-    munit_assert_int(input_load->num_child_layers, ==, 1);
-    munit_assert_null(input_load->parent_layers);
-    munit_assert_null(input_load->layer_data);
-    munit_assert_int(input_load->num_neurons, ==, 5);
-    munit_assert_int(input_load->activation.type, ==, pearl_activation_type_linear);
+    TEST_ASSERT_EQUAL_INT(input_load->type, pearl_layer_type_input);
+    TEST_ASSERT_EQUAL_INT(input_load->num_parent_layers, 0);
+    TEST_ASSERT_NULL(input_load->parent_layers);
+    TEST_ASSERT_EQUAL_INT(input_load->num_child_layers, 1);
+    TEST_ASSERT_NULL(input_load->parent_layers);
+    TEST_ASSERT_NULL(input_load->layer_data);
+    TEST_ASSERT_EQUAL_INT(input_load->num_neurons, 5);
+    TEST_ASSERT_EQUAL_INT(input_load->activation.type, pearl_activation_type_linear);
 
-    munit_assert_not_null(input_load->child_layers);
-    munit_assert_not_null(input_load->child_layers[0]);
+    TEST_ASSERT_NOT_NULL(input_load->child_layers);
+    TEST_ASSERT_NOT_NULL(input_load->child_layers[0]);
     pearl_layer *drop_load = input_load->child_layers[0];
-    munit_assert_int(drop_load->type, ==, pearl_layer_type_dropout);
-    munit_assert_int(drop_load->num_child_layers, ==, 1);
-    munit_assert_not_null(drop_load->child_layers);
-    munit_assert_not_null(drop_load->child_layers[0]);
-    munit_assert_int(drop_load->num_parent_layers, ==, 1);
-    munit_assert_not_null(drop_load->parent_layers);
-    munit_assert_not_null(drop_load->parent_layers[0]);
-    munit_assert_int(drop_load->parent_layers[0]->type, ==, pearl_layer_type_input);
-    munit_assert_not_null(drop_load->layer_data);
-    munit_assert_int(drop_load->num_neurons, ==, 5);
+    TEST_ASSERT_EQUAL_INT(drop_load->type, pearl_layer_type_dropout);
+    TEST_ASSERT_EQUAL_INT(drop_load->num_child_layers, 1);
+    TEST_ASSERT_NOT_NULL(drop_load->child_layers);
+    TEST_ASSERT_NOT_NULL(drop_load->child_layers[0]);
+    TEST_ASSERT_EQUAL_INT(drop_load->num_parent_layers, 1);
+    TEST_ASSERT_NOT_NULL(drop_load->parent_layers);
+    TEST_ASSERT_NOT_NULL(drop_load->parent_layers[0]);
+    TEST_ASSERT_EQUAL_INT(drop_load->parent_layers[0]->type, pearl_layer_type_input);
+    TEST_ASSERT_NOT_NULL(drop_load->layer_data);
+    TEST_ASSERT_EQUAL_INT(drop_load->num_neurons, 5);
     const pearl_layer_data_dropout *data_drop_load = (pearl_layer_data_dropout *)drop_load->layer_data;
-    munit_assert_float(data_drop_load->rate, ==, 0.5);
-    munit_assert_int(data_drop_load->weights->dimension, ==, 1);
-    munit_assert_not_null(data_drop_load->weights->size);
-    munit_assert_int(data_drop_load->weights->size[0], ==, 5);
-    munit_assert_not_null(data_drop_load->weights->data);
+    TEST_ASSERT_EQUAL_FLOAT(data_drop_load->rate, 0.5);
+    TEST_ASSERT_EQUAL_INT(data_drop_load->weights->dimension, 1);
+    TEST_ASSERT_NOT_NULL(data_drop_load->weights->size);
+    TEST_ASSERT_EQUAL_INT(data_drop_load->weights->size[0], 5);
+    TEST_ASSERT_NOT_NULL(data_drop_load->weights->data);
     for (unsigned int i = 0; i < data_drop_load->weights->size[0]; i++) {
-        munit_assert_float(data_drop_load->weights->data[i], ==, 0.0);
+        TEST_ASSERT_EQUAL_FLOAT(data_drop_load->weights->data[i], 0.0);
     }
 
     //TODO: Compare biases and weights
-    munit_assert_not_null(drop_load->child_layers);
-    munit_assert_not_null(drop_load->child_layers[0]);
+    TEST_ASSERT_NOT_NULL(drop_load->child_layers);
+    TEST_ASSERT_NOT_NULL(drop_load->child_layers[0]);
     pearl_layer *fc_load = drop_load->child_layers[0];
-    munit_assert_int(fc_load->type, ==, pearl_layer_type_fully_connected);
-    munit_assert_int(fc_load->num_child_layers, ==, 0);
-    munit_assert_null(fc_load->child_layers);
-    munit_assert_int(fc_load->num_parent_layers, ==, 1);
-    munit_assert_not_null(fc_load->parent_layers);
-    munit_assert_not_null(fc_load->parent_layers[0]);
-    munit_assert_int(fc_load->parent_layers[0]->type, ==, pearl_layer_type_dropout);
-    munit_assert_int(fc_load->num_neurons, ==, 5);
-    munit_assert_int(fc_load->activation.type, ==, pearl_activation_type_relu);
-    munit_assert_not_null(fc_load->layer_data);
+    TEST_ASSERT_EQUAL_INT(fc_load->type, pearl_layer_type_fully_connected);
+    TEST_ASSERT_EQUAL_INT(fc_load->num_child_layers, 0);
+    TEST_ASSERT_NULL(fc_load->child_layers);
+    TEST_ASSERT_EQUAL_INT(fc_load->num_parent_layers, 1);
+    TEST_ASSERT_NOT_NULL(fc_load->parent_layers);
+    TEST_ASSERT_NOT_NULL(fc_load->parent_layers[0]);
+    TEST_ASSERT_EQUAL_INT(fc_load->parent_layers[0]->type, pearl_layer_type_dropout);
+    TEST_ASSERT_EQUAL_INT(fc_load->num_neurons, 5);
+    TEST_ASSERT_EQUAL_INT(fc_load->activation.type, pearl_activation_type_relu);
+    TEST_ASSERT_NOT_NULL(fc_load->layer_data);
     const pearl_layer_data_fully_connected *data_fc_load = (pearl_layer_data_fully_connected *)fc_load->layer_data;
-    munit_assert_not_null(data_fc_load->weights);
-    munit_assert_int(data_fc_load->weights->dimension, ==, 2);
-    munit_assert_not_null(data_fc_load->weights->size);
-    munit_assert_int(data_fc_load->weights->size[0], ==, 5);
-    munit_assert_int(data_fc_load->weights->size[1], ==, 1);
-    munit_assert_not_null(data_fc_load->weights->data);
+    TEST_ASSERT_NOT_NULL(data_fc_load->weights);
+    TEST_ASSERT_EQUAL_INT(data_fc_load->weights->dimension, 2);
+    TEST_ASSERT_NOT_NULL(data_fc_load->weights->size);
+    TEST_ASSERT_EQUAL_INT(data_fc_load->weights->size[0], 5);
+    TEST_ASSERT_EQUAL_INT(data_fc_load->weights->size[1], 1);
+    TEST_ASSERT_NOT_NULL(data_fc_load->weights->data);
     for (unsigned int i = 0; i < data_fc_load->weights->size[0]; i++) {
-        munit_assert_float(data_fc_load->weights->data[i], !=, 0.0);
+        TEST_ASSERT_NOT_EQUAL_FLOAT(data_fc_load->weights->data[i], 0.0f);
     }
-    munit_assert_not_null(data_fc_load->biases);
-    munit_assert_int(data_fc_load->biases->dimension, ==, 1);
-    munit_assert_not_null(data_fc_load->biases->size);
-    munit_assert_int(data_fc_load->biases->size[0], ==, 5);
-    munit_assert_not_null(data_fc_load->biases->data);
+    TEST_ASSERT_NOT_NULL(data_fc_load->biases);
+    TEST_ASSERT_EQUAL_INT(data_fc_load->biases->dimension, 1);
+    TEST_ASSERT_NOT_NULL(data_fc_load->biases->size);
+    TEST_ASSERT_EQUAL_INT(data_fc_load->biases->size[0], 5);
+    TEST_ASSERT_NOT_NULL(data_fc_load->biases->data);
     for (unsigned int i = 0; i < data_fc_load->biases->size[0]; i++) {
-        munit_assert_double_equal(data_fc_load->biases->data[i], 0.0, 15);
+        TEST_ASSERT_EQUAL_FLOAT(data_fc_load->biases->data[i], 0.0f);
     }
 
     pearl_network_destroy(&network_load);
-    return MUNIT_OK;
 }
 
-static MunitResult test_network_epoch_check(const MunitParameter params[], void *data)
+void test_network_epoch_check()
 {
-    (void) params;
-    (void) data;
     pearl_network *network = pearl_network_create();
     pearl_layer *input_layer = pearl_layer_create_input(2);
     network->input_layer = input_layer;
@@ -254,52 +251,48 @@ static MunitResult test_network_epoch_check(const MunitParameter params[], void 
     output_data->weights->data[2] = -0.1679168826901067f;
 
     float loss = pearl_network_train_epoch(&network, input, output);
-    munit_assert_double_equal(loss, 0.7182439337288026, 7);
+    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7182439337288026);
 
-    munit_assert_double_equal(fc_data->weights->data[0], -0.2679348142022225, 7);
-    munit_assert_double_equal(fc_data->weights->data[1], 0.4848339319438247, 7);
-    munit_assert_double_equal(fc_data->weights->data[2], -0.6315295129156053, 7);
-    munit_assert_double_equal(fc_data->weights->data[3], -0.7420722005600799, 7);
-    munit_assert_double_equal(fc_data->weights->data[4], 1.3678618463245154, 7);
-    munit_assert_double_equal(fc_data->weights->data[5], -1.229933624737421, 7);
-    munit_assert_double_equal(output_data->weights->data[0], 0.0766308057690951, 7);
-    munit_assert_double_equal(output_data->weights->data[1], -1.004698165338342, 7);
-    munit_assert_double_equal(output_data->weights->data[2], -0.1505549847294349, 7);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2679348142022225);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848339319438247);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295129156053);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722005600799);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3678618463245154);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.229933624737421);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0766308057690951);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.004698165338342);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1505549847294349);
 
-    munit_assert_double_equal(fc_data->biases->data[0], -1.3171855204123333e-5, 7);
-    munit_assert_double_equal(fc_data->biases->data[1], 0.0, 7);
-    munit_assert_double_equal(fc_data->biases->data[2], -2.4724469075790463e-4, 7);
-    munit_assert_double_equal(output_data->biases->data[0], 0.0012500486106543, 7);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -1.3171855204123333e-5);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -2.4724469075790463e-4);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.0012500486106543);
 
     loss = pearl_network_train_epoch(&network, input, output);
-    munit_assert_double_equal(loss, 0.7150801771957616, 7);
+    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7150801771957616);
 
-    munit_assert_double_equal(fc_data->weights->data[0], -0.2688913302831794, 7);
-    munit_assert_double_equal(fc_data->weights->data[1], 0.4848169107220069, 7);
-    munit_assert_double_equal(fc_data->weights->data[2], -0.6315295129156053, 7);
-    munit_assert_double_equal(fc_data->weights->data[3], -0.7420722005600799, 7);
-    munit_assert_double_equal(fc_data->weights->data[4], 1.3676672556820724, 7);
-    munit_assert_double_equal(fc_data->weights->data[5], -1.2280543770573713, 7);
-    munit_assert_double_equal(output_data->weights->data[0], 0.0798675160482573, 7);
-    munit_assert_double_equal(output_data->weights->data[1], -1.004698165338342, 7);
-    munit_assert_double_equal(output_data->weights->data[2], -0.1334351602381933, 7);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2688913302831794);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848169107220069);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295129156053);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722005600799);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3676672556820724);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.2280543770573713);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0798675160482573);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.004698165338342);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1334351602381933);
 
-    munit_assert_double_equal(fc_data->biases->data[0], -3.0193077021853888e-5, 7);
-    munit_assert_double_equal(fc_data->biases->data[1], 0.0, 7);
-    munit_assert_double_equal(fc_data->biases->data[2], -4.4183533320092531e-4, 7);
-    munit_assert_double_equal(output_data->biases->data[0], 0.0022947400840857, 7);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -3.0193077021853888e-5);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -4.4183533320092531e-4);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.0022947400840857);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
-
-    return MUNIT_OK;
 }
 
-static MunitResult test_network_regression(const MunitParameter params[], void *data)
+void test_network_regression()
 {
-    (void) params;
-    (void) data;
     pearl_network *network = pearl_network_create(2, 1);
     pearl_layer *input_layer = pearl_layer_create_input(2);
     network->input_layer = input_layer;
@@ -341,63 +334,14 @@ static MunitResult test_network_regression(const MunitParameter params[], void *
     pearl_tensor_destroy(&input);
     pearl_tensor_destroy(&output);
     pearl_tensor_destroy(&pred);
-    return MUNIT_OK;
 }
 
-static MunitTest test_suite_tests[] = {
-    {
-        (char *) "/network/create",
-        test_network_create,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL
-    },
-    {
-        (char *) "/network/add_layers",
-        test_network_add_layers,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL
-    },
-    {
-        (char *) "/network/save_and_load",
-        test_network_save_load,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL
-    },
-    {
-        (char *) "/network/check_calculation",
-        test_network_epoch_check,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL
-    },
-    {
-        (char *) "/network/check_regression",
-        test_network_regression,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL
-    },
-    { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
-};
-
-static const MunitSuite test_suite = {
-    (char *) "/tests",
-    test_suite_tests,
-    NULL,
-    1,
-    MUNIT_SUITE_OPTION_NONE
-};
-
-int main(int argc, char *argv[MUNIT_ARRAY_PARAM(argc + 1)])
-{
-    return munit_suite_main(&test_suite, NULL, argc, argv);
-    return 0;
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_network_create);
+    RUN_TEST(test_network_add_layers);
+    RUN_TEST(test_network_save_load);
+    RUN_TEST(test_network_epoch_check);
+    RUN_TEST(test_network_regression);
+    return UNITY_END();
 }
