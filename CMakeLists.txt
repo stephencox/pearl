@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10.0)
+
 project(pearl)
 set(CMAKE_C_STANDARD 11)
 

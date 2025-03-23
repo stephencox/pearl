@@ -14,8 +14,9 @@ jobs:
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
           submodules: true
-      - name: Run build
+      - name: Run build and test
         run: |
-          mkdir build
-          cmake -S . -B build
-          cmake --build build/ --config Release
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release .. && make
+          ./pearl-test
+          
