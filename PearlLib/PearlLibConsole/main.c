@@ -15,11 +15,12 @@ int main()
     output_layer->activation = pearl_activation_create(pearl_activation_type_sigmoid);
     pearl_layer_add_child(&fc2, &output_layer);
     network->output_layer = output_layer;
-    network->learning_rate = 0.1;
+    network->learning_rate = 0.1f;
 
     pearl_tensor *input = pearl_tensor_create(2, 4, 2);
     pearl_tensor *output = pearl_tensor_create(2, 1, 4);
-    int counter_in = 0, counter_out = 0;
+    int counter_in = 0;
+    int counter_out = 0;
     for (int i = 0; i <= 1; i++) {
         for (int j = 0; j <= 1; j++) {
             int a = i & j;
@@ -32,14 +33,14 @@ int main()
         }
     }
 
-    double loss;
+    float loss;
     clock_t t1, t2;
     t1 = clock();
     for (int i = 0; i < 1000; i++) {
         loss = pearl_network_train_epoch(&network, input, output);
     }
     t2 = clock();
-    printf("----------------\nLoss=%f (%ld ms)\n----------------\n", loss, (long)(((double)t2 - t1) / CLOCKS_PER_SEC * 1000));
+    printf("----------------\nLoss=%f (%ld ms)\n----------------\n", loss, (long)(((float)t2 - t1) / CLOCKS_PER_SEC * 1000));
 
     return 0;
 }

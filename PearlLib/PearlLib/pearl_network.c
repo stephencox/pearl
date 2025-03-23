@@ -6,7 +6,7 @@ PEARL_API pearl_network *pearl_network_create()
     pearl_network *network = malloc(sizeof(pearl_network));
     network->optimiser = pearl_optimiser_sgd;
     network->loss = pearl_loss_create(pearl_loss_binary_cross_entropy);
-    network->learning_rate = 1e-3;
+    network->learning_rate = 1e-3f;
     network->version.major = PEARL_NETWORK_VERSION_MAJOR;
     network->version.minor = PEARL_NETWORK_VERSION_MINOR;
     network->version.revision = PEARL_NETWORK_VERSION_REVISION;
@@ -27,14 +27,14 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
     }
 }
 
-PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
+PEARL_API float pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
 {
     // Forward
     pearl_network_forward(network, input);
 
     // Cost
     const pearl_tensor *al = (*network)->output_layer->a;
-    double cost = pearl_loss_cost((*network)->loss, output, al);
+    float cost = pearl_loss_cost((*network)->loss, output, al);
 
     //Backward
     pearl_network_backward(network, output);

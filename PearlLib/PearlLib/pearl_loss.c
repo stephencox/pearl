@@ -17,36 +17,36 @@ pearl_loss pearl_loss_create(pearl_loss_type type)
     return loss;
 }
 
-double pearl_loss_cost(pearl_loss loss, const pearl_tensor *output, const pearl_tensor *output_prediction)
+float pearl_loss_cost(pearl_loss loss, const pearl_tensor *output, const pearl_tensor *output_prediction)
 {
     assert(output->dimension == 2);
     assert(output->size[0] == 1);
     assert(output_prediction->dimension == 2);
     assert(output_prediction->size[0] == 1);
 
-    double cost = 0.0;
+    float cost = 0.0f;
     for (unsigned int i = 0; i < output->size[1]; i++) {
         cost += loss.calculate(output->data[i], output_prediction->data[i]);
     }
-    return cost / (double)(output->size[1]);
+    return cost / (float)(output->size[1]);
 }
 
-double pearl_loss_binary_cross_entropy_func(double out, double pred)
+float pearl_loss_binary_cross_entropy_func(float out, float pred)
 {
-    return -(out * log(pred) + (1.0 - out) * log(1.0 - pred));
+    return -(out * logf(pred) + (1.0f - out) * logf(1.0f - pred));
 }
 
-double pearl_loss_binary_cross_entropy_func_derivative(double out, double pred)
+float pearl_loss_binary_cross_entropy_func_derivative(float out, float pred)
 {
-    return  out / pred - (1.0 - out) / (1.0 - pred);
+    return  out / pred - (1.0f - out) / (1.0f - pred);
 }
 
-double pearl_loss_mean_squared_error_func(double out, double pred)
+float pearl_loss_mean_squared_error_func(float out, float pred)
 {
-    return pow(out - pred, 2);
+    return powf(out - pred, 2.0f);
 }
 
-double pearl_loss_mean_squared_error_func_derivative(double out, double pred)
+float pearl_loss_mean_squared_error_func_derivative(float out, float pred)
 {
-    return 0.5 * (out - pred);
+    return 0.5f * (out - pred);
 }

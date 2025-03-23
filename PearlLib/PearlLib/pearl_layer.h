@@ -42,7 +42,7 @@ typedef struct {
 
 typedef struct {
     pearl_tensor *weights;
-    double rate;
+    float rate;
 } pearl_layer_data_dropout;
 
 pearl_layer *pearl_layer_create();
@@ -56,7 +56,7 @@ void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer);
 void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer);
-void pearl_layer_update(pearl_layer **child_layer, double learning_rate);
-void pearl_layer_update_fully_connected(pearl_layer **child_layer, double learning_rate);
+void pearl_layer_update(pearl_layer **child_layer, float learning_rate);
+void pearl_layer_update_fully_connected(pearl_layer **child_layer, float learning_rate);
 
 #endif // PEARL_LAYER_H

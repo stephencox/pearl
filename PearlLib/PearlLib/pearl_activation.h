@@ -13,18 +13,18 @@ typedef enum {
 
 typedef struct {
     pearl_activation_type type;
-    double (*calculate)(double);
-    double (*calculate_derivative)(double);
+    float (*calculate)(float);
+    float (*calculate_derivative)(float);
 } pearl_activation;
 
 PEARL_API pearl_activation pearl_activation_create(pearl_activation_type type);
-double pearl_activation_function_linear(double input);
-double pearl_activation_function_relu(double input);
-double pearl_activation_function_tanh(double input);
-double pearl_activation_function_sigmoid(double input);
-double pearl_activation_function_derivative_linear(double input);
-double pearl_activation_function_derivative_relu(double input);
-double pearl_activation_function_derivative_tanh(double input);
-double pearl_activation_function_derivative_sigmoid(double input);
+float pearl_activation_function_linear(float input);
+float pearl_activation_function_relu(float input);
+float pearl_activation_function_tanh(float input);
+float pearl_activation_function_sigmoid(float input);
+float pearl_activation_function_derivative_linear(float input);
+float pearl_activation_function_derivative_relu(float input);
+float pearl_activation_function_derivative_tanh(float input);
+float pearl_activation_function_derivative_sigmoid(float input);
 
 #endif // PEARL_ACTIVATION_H

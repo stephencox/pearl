@@ -13,7 +13,7 @@
 typedef struct {
     unsigned int dimension;
     unsigned int *size;
-    double *data;
+    float *data;
 } pearl_tensor;
 
 #define ARRAY_IDX_2D(i,j,n) (i*n+j)

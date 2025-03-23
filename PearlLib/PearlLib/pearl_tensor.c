@@ -14,7 +14,7 @@ PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
         alloc *= arg;
     }
     va_end(list);
-    result->data = calloc(alloc, sizeof(double));
+    result->data = calloc(alloc, sizeof(float));
     return result;
 }
 
@@ -44,7 +44,7 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
         result->size[i] = x->size[i];
         alloc *= x->size[i];
     }
-    result->data = calloc(alloc, sizeof(double));
+    result->data = calloc(alloc, sizeof(float));
 
     unsigned int num_data = 1;
     for (unsigned int i = 0; i < x->dimension; i++) {

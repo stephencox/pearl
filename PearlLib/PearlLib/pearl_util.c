@@ -1,13 +1,13 @@
 #include <pearl_util.h>
 
-double pearl_util_rand_norm(double mu, double sigma)
+float pearl_util_rand_norm(float mu, float sigma)
 {
-    double U1;
-    double U2;
-    double W;
-    double mult;
-    static double X1;
-    static double X2;
+    float U1;
+    float U2;
+    float W;
+    float mult;
+    static float X1;
+    static float X2;
     static int call = 0;
 
     if (call == 1) {
@@ -16,13 +16,13 @@ double pearl_util_rand_norm(double mu, double sigma)
     }
 
     do {
-        U1 = -1 + ((double) rand() / RAND_MAX) * 2;
-        U2 = -1 + ((double) rand() / RAND_MAX) * 2;
-        W = pow(U1, 2) + pow(U2, 2);
+        U1 = -1.0f + ((float) rand() / RAND_MAX) * 2.0f;
+        U2 = -1.0f + ((float) rand() / RAND_MAX) * 2.0f;
+        W = powf(U1, 2.0f) + powf(U2, 2.0f);
     }
     while (W >= 1 || W == 0);
 
-    mult = sqrt((-2 * log(W)) / W);
+    mult = sqrtf((-2.0f * logf(W)) / W);
     X1 = U1 * mult;
     X2 = U2 * mult;
 
@@ -31,18 +31,18 @@ double pearl_util_rand_norm(double mu, double sigma)
     return (mu + sigma * X1);
 }
 
-double pearl_util_accuracy(const pearl_tensor *output, pearl_tensor *pred)
+float pearl_util_accuracy(const pearl_tensor *output, const pearl_tensor *pred)
 {
     assert(output->dimension == pred->dimension);
     assert(output->dimension == 1);
-    unsigned int correct = 0;
+    float correct = 0;
     for (unsigned int i = 0; i < output->size[0]; i++) {
-        if (output->data[i] < 0.5 && pred->data[i] < 0.5) {
+        if (output->data[i] < 0.5f && pred->data[i] < 0.5f) {
             correct++;
         }
-        if (output->data[i] >= 0.5 && pred->data[i] >= 0.5) {
+        if (output->data[i] >= 0.5f && pred->data[i] >= 0.5f) {
             correct++;
         }
     }
-    return 1.0 * correct / output->size[0];
+    return correct / (float)output->size[0];
 }

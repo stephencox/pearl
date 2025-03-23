@@ -25,44 +25,44 @@ pearl_activation pearl_activation_create(pearl_activation_type type)
     return activation;
 }
 
-double pearl_activation_function_linear(double input)
+float pearl_activation_function_linear(float input)
 {
     return input;
 }
 
-double pearl_activation_function_relu(double input)
+float pearl_activation_function_relu(float input)
 {
     return input * (input > 0);
 }
 
-double pearl_activation_function_tanh(double input)
+float pearl_activation_function_tanh(float input)
 {
-    return tanh(input);
+    return tanhf(input);
 }
 
-double pearl_activation_function_sigmoid(double input)
+float pearl_activation_function_sigmoid(float input)
 {
-    return 1.0 / (1.0 + exp(-input));
+    return 1.0f / (1.0f + expf(-input));
 }
 
-double pearl_activation_function_derivative_linear(double input)
+float pearl_activation_function_derivative_linear(float input)
 {
     (void)(input); // Suppress warning
-    return 1.0;
+    return 1.0f;
 }
 
-double pearl_activation_function_derivative_relu(double input)
+float pearl_activation_function_derivative_relu(float input)
 {
     return input > 0;
 }
 
-double pearl_activation_function_derivative_tanh(double input)
+float pearl_activation_function_derivative_tanh(float input)
 {
-    return 1 - pow(pearl_activation_function_tanh(input), 2.0);
+    return 1.0f - powf(pearl_activation_function_tanh(input), 2.0f);
 }
 
-double pearl_activation_function_derivative_sigmoid(double input)
+float pearl_activation_function_derivative_sigmoid(float input)
 {
-    double val = pearl_activation_function_sigmoid(input);
-    return val * (1.0 - val);
+    float val = pearl_activation_function_sigmoid(input);
+    return val * (1.0f - val);
 }

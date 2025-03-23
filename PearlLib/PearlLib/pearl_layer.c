@@ -107,9 +107,9 @@ pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsign
     pearl_layer_data_fully_connected *data = malloc(sizeof(pearl_layer_data_fully_connected));
     data->biases = pearl_tensor_create(1, layer->num_neurons);
     data->weights = pearl_tensor_create(2, layer->num_neurons, num_neurons_prev_layer);
-    double var = sqrt(2.0 / (layer->num_neurons + num_neurons_prev_layer));
+    float var = sqrtf(2.0f / (float)(layer->num_neurons + num_neurons_prev_layer));
     for (unsigned int i = 0; i < data->weights->size[0] * data->weights->size[1]; i++) {
-        data->weights->data[i] = pearl_util_rand_norm(0.0, var);
+        data->weights->data[i] = pearl_util_rand_norm(0.0f, var);
     }
     data->db = NULL;
     data->dw = NULL;
@@ -138,7 +138,7 @@ pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons)
     layer->type = pearl_layer_type_dropout;
     layer->num_neurons = num_neurons;
     pearl_layer_data_dropout *data = malloc(sizeof(pearl_layer_data_dropout));
-    data->rate = 0.5;
+    data->rate = 0.5f;
     data->weights = pearl_tensor_create(1, layer->num_neurons);
     layer->layer_data = data;
     return layer;
@@ -176,7 +176,7 @@ void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer
     assert(data->weights->size[0] == data->biases->size[0]);
     for (unsigned int i = 0; i < data->weights->size[0]; i++) {
         for (unsigned int j = 0; j < input->size[1]; j++) {
-            double sum = 0.0;
+            float sum = 0.0f;
             for (unsigned int k = 0; k < data->weights->size[1]; k++) {
                 assert(ARRAY_IDX_2D(i, k, data->weights->size[1]) < data->weights->size[0] * data->weights->size[1]);
                 assert(ARRAY_IDX_2D(k, j, input->size[1]) < input->size[0]*input->size[1]);
@@ -239,28 +239,28 @@ void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer
     assert(data->dw->size[1] == (*parent_layer)->a->size[0]);
     assert(data->db->dimension == 1);
     for (unsigned int i = 0; i < (*child_layer)->dz->size[0]; i++) {
-        double sum_b = 0.0;
+        float sum_b = 0.0f;
         for (unsigned int k = 0; k < (*child_layer)->dz->size[1]; k++) {
             (*child_layer)->dz->data[ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1])] = (*child_layer)->activation.calculate_derivative((*child_layer)->z->data[ARRAY_IDX_2D(i, k, (*child_layer)->z->size[1])]) * (*child_layer)->da->data[ARRAY_IDX_2D(i, k, (*child_layer)->da->size[1])];
             sum_b += (*child_layer)->dz->data[ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1])];
         }
         for (unsigned int j = 0; j < (*parent_layer)->a->size[0]; j++) {
-            double sum_w = 0.0;
+            float sum_w = 0.0f;
             for (unsigned int k = 0; k < (*child_layer)->dz->size[1]; k++) {
                 assert(ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
                 assert(ARRAY_IDX_2D(j, k, (*parent_layer)->a->size[1]) < (*parent_layer)->a->size[0] * (*parent_layer)->a->size[1]);
                 sum_w += (*child_layer)->dz->data[ARRAY_IDX_2D(i, k, (*child_layer)->dz->size[1])] * (*parent_layer)->a->data[ARRAY_IDX_2D(j, k, (*parent_layer)->a->size[1])];
             }
             assert(ARRAY_IDX_2D(i, j, data->dw->size[1]) < data->dw->size[0]*data->dw->size[1]);
-            data->dw->data[ARRAY_IDX_2D(i, j, data->dw->size[1])] = sum_w / (*parent_layer)->a->size[1];
+            data->dw->data[ARRAY_IDX_2D(i, j, data->dw->size[1])] = sum_w / (float)((*parent_layer)->a->size[1]);
         }
         assert(i < data->db->size[0]);
-        data->db->data[i] = sum_b / (*parent_layer)->a->size[1];
+        data->db->data[i] = sum_b / (float)((*parent_layer)->a->size[1]);
     }
     /* Calculate dA of parent layer */
     for (unsigned int i = 0; i < data->weights->size[1]; i++) {
         for (unsigned int j = 0; j < (*child_layer)->dz->size[1]; j++) {
-            double sum_w = 0.0;
+            float sum_w = 0.0f;
             for (unsigned int k = 0; k < data->weights->size[0]; k++) {
                 assert(ARRAY_IDX_2D(k, i, data->weights->size[1]) < data->weights->size[0] * data->weights->size[1]);
                 assert(ARRAY_IDX_2D(k, j, (*child_layer)->dz->size[1]) < (*child_layer)->dz->size[0] * (*child_layer)->dz->size[1]);
@@ -273,7 +273,7 @@ void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer
 }
 
 
-void pearl_layer_update(pearl_layer **child_layer, double learning_rate)
+void pearl_layer_update(pearl_layer **child_layer, float learning_rate)
 {
     switch ((*child_layer)->type) {
         case pearl_layer_type_input:
@@ -289,7 +289,7 @@ void pearl_layer_update(pearl_layer **child_layer, double learning_rate)
     }
 }
 
-void pearl_layer_update_fully_connected(pearl_layer **child_layer, double learning_rate)
+void pearl_layer_update_fully_connected(pearl_layer **child_layer, float learning_rate)
 {
     pearl_layer_data_fully_connected *data = (pearl_layer_data_fully_connected *)(*child_layer)->layer_data;
     assert(data->weights->dimension == 2);

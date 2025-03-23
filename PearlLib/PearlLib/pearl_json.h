@@ -1,6 +1,6 @@
-#ifndef PEARL_JSON_H
-#define PEARL_JSON_H
+#pragma once
 
+//TODO: Replace with https://github.com/json-c/
 #include <parson.h>
 #include <pearl_layer.h>
 #include <pearl_network.h>
@@ -19,5 +19,3 @@ JSON_Value *pearl_json_tensor_serialise(const pearl_tensor *tensor);
 pearl_tensor *pearl_json_tensor_deserialise(const JSON_Value *json);
 JSON_Value *pearl_json_version_serialise(const pearl_version version);
 pearl_version pearl_json_version_deserialise(const JSON_Value *json);
-
-#endif // PEARL_JSON_H

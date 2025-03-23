@@ -20,13 +20,13 @@ typedef struct {
     pearl_layer *output_layer;
     pearl_optimiser optimiser;
     pearl_loss loss;
-    double learning_rate;
+    float learning_rate;
     pearl_version version;
 } pearl_network;
 
 PEARL_API pearl_network *pearl_network_create();
 PEARL_API void pearl_network_destroy(pearl_network **network);
-PEARL_API double pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output);
+PEARL_API float pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output);
 void pearl_network_forward(pearl_network **network, const pearl_tensor *input);
 void pearl_network_backward(pearl_network **network, const pearl_tensor *output);
 PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input);
