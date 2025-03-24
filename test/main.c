@@ -240,51 +240,69 @@ void test_network_epoch_check()
     }
     pearl_layer_data_fully_connected *fc_data = (pearl_layer_data_fully_connected *)fc->layer_data;
     pearl_layer_data_fully_connected *output_data = (pearl_layer_data_fully_connected *)output_layer->layer_data;
-    fc_data->weights->data[0] = -0.2670205687292891f;
-    fc_data->weights->data[1] = 0.4848471037990288f;
-    fc_data->weights->data[2] = -0.6315295129156053f;
-    fc_data->weights->data[3] = -0.7420722005600799f;
-    fc_data->weights->data[4] = 1.3681090910152733f;
-    fc_data->weights->data[5] = -1.232025382027168f;
-    output_data->weights->data[0] = 0.0733915213686632f;
-    output_data->weights->data[1] = -1.004698165338342f;
-    output_data->weights->data[2] = -0.1679168826901067f;
+    fc_data->weights->data[0] = -0.2670205f;
+    fc_data->weights->data[1] = 0.4848471f;
+    fc_data->weights->data[2] = -0.6315295f;
+    fc_data->weights->data[3] = -0.7420722f;
+    fc_data->weights->data[4] = 1.3681090f;
+    fc_data->weights->data[5] = -1.2320253f;
+    output_data->weights->data[0] = 0.0733915f;
+    output_data->weights->data[1] = -1.0046981f;
+    output_data->weights->data[2] = -0.1679168f;
 
     float loss = pearl_network_train_epoch(&network, input, output);
-    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7182439337288026);
+    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7182439f);
 
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2679348142022225);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848339319438247);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295129156053);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722005600799);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3678618463245154);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.229933624737421);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0766308057690951);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.004698165338342);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1505549847294349);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2679348f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848339f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3678618f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.2299336f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0766308f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.0046981f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1505549f);
 
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -1.3171855204123333e-5);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -2.4724469075790463e-4);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.0012500486106543);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -1.3171855e-5f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -2.4724469e-4f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.00125005f);
 
     loss = pearl_network_train_epoch(&network, input, output);
-    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7150801771957616);
+    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7150801f);
 
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2688913302831794);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848169107220069);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295129156053);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722005600799);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3676672556820724);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.2280543770573713);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0798675160482573);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.004698165338342);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1334351602381933);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2688913f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.4848169f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.3676672f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.2280543f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0798675f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.0046981f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1334351f);
 
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -3.0193077021853888e-5);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0);
-    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -4.4183533320092531e-4);
-    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.0022947400840857);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -3.0193077e-5f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -4.4183533e-4f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.002294742f);
+
+    loss = pearl_network_train_epoch(&network, input, output);
+    TEST_ASSERT_EQUAL_FLOAT(loss, 0.7120114f);
+
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[0], -0.2698902f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[1], 0.484796f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[2], -0.6315295f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[3], -0.7420722f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[4], 1.367518f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->weights->data[5], -1.226386f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[0], 0.0831031f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[1], -1.0046981f);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->weights->data[2], -0.1165501f);
+
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[0], -5.114581e-05);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[1], 0.0f);
+    TEST_ASSERT_EQUAL_FLOAT(fc_data->biases->data[2], -0.0005908558);
+    TEST_ASSERT_EQUAL_FLOAT(output_data->biases->data[0], 0.003140901);
 
     pearl_network_destroy(&network);
     pearl_tensor_destroy(&input);
@@ -323,11 +341,18 @@ void test_network_regression()
         }
     }
 
-    float loss;
-    for (int i = 0; i < 1000; i++) {
-        loss = pearl_network_train_epoch(&network, input, output);
+    float loss1;
+    for (int i = 0; i < 100; i++) {
+        loss1 = pearl_network_train_epoch(&network, input, output);
     }
-    printf("MSE Loss = %0.16f\n", loss);
+
+    float loss2;
+    for (int i = 0; i < 100; i++) {
+        loss2 = pearl_network_train_epoch(&network, input, output);
+    }
+
+    TEST_ASSERT_LESS_THAN_FLOAT(loss1, loss2);
+
     pearl_tensor *pred = pearl_network_calculate(&network, input);
 
     pearl_network_destroy(&network);
