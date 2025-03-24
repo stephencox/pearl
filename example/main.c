@@ -25,22 +25,26 @@ int main()
         for (int j = 0; j <= 1; j++) {
             int a = i & j;
             int b = ~i & ~j;
-            input->data[counter_in] = i;
+            input->data[counter_in] = (float)i;
             input->data[counter_in + 1] = j;
-            output->data[counter_out] = ~a & ~b;
+            output->data[counter_out] = (float)(~a & ~b);
             counter_in += 2;
             counter_out++;
         }
     }
 
     float loss;
-    clock_t t1, t2;
-    t1 = clock();
+    clock_t t1 = clock();
     for (int i = 0; i < 1000; i++) {
         loss = pearl_network_train_epoch(&network, input, output);
     }
-    t2 = clock();
+
+    clock_t t2 = clock();
     printf("----------------\nLoss=%f (%ld ms)\n----------------\n", loss, (long)(((float)t2 - t1) / CLOCKS_PER_SEC * 1000));
+
+    pearl_tensor_destroy(&input);
+    pearl_tensor_destroy(&output);
+    pearl_network_destroy(&network);
 
     return 0;
 }

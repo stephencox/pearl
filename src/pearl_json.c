@@ -163,17 +163,17 @@ JSON_Value *pearl_json_tensor_serialise(const pearl_tensor *tensor)
 
 pearl_tensor *pearl_json_tensor_deserialise(const JSON_Value *json)
 {
-    JSON_Object *obj = json_value_get_object(json);
-    pearl_tensor *tensor = malloc(sizeof(pearl_tensor));
+    const JSON_Object *obj = json_value_get_object(json);
+    pearl_tensor *tensor = calloc(1, sizeof(pearl_tensor));
     tensor->dimension = (unsigned int)json_object_get_number(obj, "dimension");
-    JSON_Value *tensor_size_array = json_object_get_value(obj, "size");
+    const JSON_Value *tensor_size_array = json_object_get_value(obj, "size");
     if (tensor_size_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;
     }
     tensor->size = calloc(tensor->dimension, sizeof(unsigned int));
     unsigned int num_data = 1;
-    JSON_Array *size_array = json_value_get_array(tensor_size_array);
+    const JSON_Array *size_array = json_value_get_array(tensor_size_array);
     if (size_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;
@@ -182,13 +182,13 @@ pearl_tensor *pearl_json_tensor_deserialise(const JSON_Value *json)
         tensor->size[i] = (unsigned int)json_array_get_number(size_array, i);
         num_data *= tensor->size[i];
     }
-    JSON_Value *tensor_data_array = json_object_get_value(obj, "data");
+    const JSON_Value *tensor_data_array = json_object_get_value(obj, "data");
     if (tensor_data_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;
     }
     tensor->data = calloc(num_data, sizeof(double));
-    JSON_Array *data_array = json_value_get_array(tensor_data_array);
+    const JSON_Array *data_array = json_value_get_array(tensor_data_array);
     if (data_array == NULL) {
         pearl_tensor_destroy(&tensor);
         return NULL;

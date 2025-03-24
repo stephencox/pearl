@@ -3,7 +3,7 @@
 PEARL_API pearl_network *pearl_network_create()
 {
     srand((unsigned int)time(NULL));
-    pearl_network *network = malloc(sizeof(pearl_network));
+    pearl_network *network = calloc(1, sizeof(pearl_network));
     network->optimiser = pearl_optimiser_sgd;
     network->loss = pearl_loss_create(pearl_loss_binary_cross_entropy);
     network->learning_rate = 1e-3f;
@@ -22,6 +22,7 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
             free((*network)->input_layer);
             (*network)->input_layer = NULL;
         }
+
         free(*network);
         *network = NULL;
     }
@@ -71,7 +72,10 @@ void pearl_network_forward(pearl_network **network, const pearl_tensor *input)
 void pearl_network_backward(pearl_network **network, const pearl_tensor *output)
 {
     /* Initialise loss derivative */
-    (*network)->output_layer->da = pearl_tensor_create(2, output->size[0], output->size[1]);
+    if ((*network)->output_layer->da == NULL)
+    {
+        (*network)->output_layer->da = pearl_tensor_create(2, output->size[0], output->size[1]);
+    }
     for (unsigned int j = 0; j < output->size[1]; j++) {
         for (unsigned int x = 0; x < output->size[0]; x++) {
             assert(ARRAY_IDX_2D(j, x, output->size[0]) < output->size[0]*output->size[1]);

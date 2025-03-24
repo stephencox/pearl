@@ -3,7 +3,7 @@
 PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
 {
     va_list list;
-    pearl_tensor *result = malloc(sizeof(pearl_tensor));
+    pearl_tensor *result = calloc(1, sizeof(pearl_tensor));
     result->dimension = num_args;
     result->size = calloc(num_args, sizeof(unsigned int));
     va_start(list, num_args);
@@ -36,7 +36,7 @@ PEARL_API void pearl_tensor_destroy(pearl_tensor **x)
 
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
 {
-    pearl_tensor *result = malloc(sizeof(pearl_tensor));
+    pearl_tensor *result = calloc(1, sizeof(pearl_tensor));
     result->dimension = x->dimension;
     result->size = calloc(x->dimension, sizeof(unsigned int));
     int alloc = 1;
