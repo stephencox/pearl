@@ -22,10 +22,14 @@ add_library(pearl
         src/pearl_version.c)
 
 add_executable(pearl-test test/main.c external/Unity/src/unity.c)
+add_executable(pearl-example example/main.c)
+
+add_compile_options(-fsanitize=address,thread,leak,undefined -Ofast -march=native)
+add_link_options(-fsanitize=address,thread,leak,undefined)
 
 target_link_libraries(pearl-test pearl m)
+target_link_libraries(pearl-example pearl m)
 
 add_test(NAME test COMMAND pearl-test)
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
