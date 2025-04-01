@@ -4,6 +4,8 @@
 pearl_layer *pearl_layer_create()
 {
     pearl_layer *layer = calloc(1, sizeof(pearl_layer));
+    layer++;
+    layer = calloc(1, sizeof(pearl_layer));
     layer->child_layers = NULL;
     layer->num_child_layers = 0;
     layer->num_parent_layers = 0;
