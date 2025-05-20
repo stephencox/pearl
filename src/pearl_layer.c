@@ -357,6 +357,8 @@ void pearl_layer_update_fully_connected(pearl_layer **child_layer, float learnin
     assert(data->weights->dimension == 2);
     assert(data->weights->size[0] == data->dw->size[0]);
     assert(data->weights->size[1] == data->dw->size[1]);
+
+    #pragma omp parallel for // Add this line
     for (unsigned int i = 0; i < data->weights->size[0]; i++) {
         for (unsigned int j = 0; j < data->weights->size[1]; j++) {
             data->weights->data[ARRAY_IDX_2D(i, j, data->weights->size[1])] -= learning_rate * data->dw->data[ARRAY_IDX_2D(i, j, data->dw->size[1])];

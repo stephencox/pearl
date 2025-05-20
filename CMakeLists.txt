@@ -30,4 +30,4 @@ target_link_libraries(pearl-example pearl m)
 add_test(NAME test COMMAND pearl-test)
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-add_compile_options(-O2)
+add_compile_options(-O3 -Wall -Wextra -pedantic)

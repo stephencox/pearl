@@ -1,4 +1,5 @@
 #include <pearl_tensor.h>
+#include <string.h> // Add this include
 
 PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...)
 {
@@ -39,21 +40,22 @@ PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x)
     pearl_tensor *result = calloc(1, sizeof(pearl_tensor));
     result->dimension = x->dimension;
     result->size = calloc(x->dimension, sizeof(unsigned int));
-    int alloc = 1;
+    
+    unsigned int total_elements = 1;
     for (unsigned int i = 0 ; i < x->dimension; i++) {
         result->size[i] = x->size[i];
-        alloc *= x->size[i];
+        total_elements *= x->size[i];
     }
-    result->data = calloc(alloc, sizeof(float));
+    
+    result->data = calloc(total_elements, sizeof(float));
+    if (x->data != NULL && result->data != NULL && total_elements > 0) { // Add checks for safety
+        memcpy(result->data, x->data, total_elements * sizeof(float));
+    } else if (total_elements == 0) {
+        // If total_elements is 0, data might be NULL, which is fine.
+        // If x->data is NULL but total_elements > 0, calloc still provides zeroed memory.
+    }
 
-    unsigned int num_data = 1;
-    for (unsigned int i = 0; i < x->dimension; i++) {
-        num_data *= x->size[i];
-    }
 
-    for (unsigned int i = 0; i < num_data; i++) {
-        result->data[i] = x->data[i];
-    }
     return result;
 }
 
