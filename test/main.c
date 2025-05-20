@@ -2,9 +2,11 @@
 #include <pearl_network.h>
 #include <pearl_json.h>
 #include <pearl_print.h>
+#include <time.h> // For time()
 
 void setUp(void)
 {
+    srand(time(NULL)); // Seed for randomness in tests
 }
 
 void tearDown(void)
@@ -59,13 +61,14 @@ void test_network_add_layers()
     const pearl_layer_data_dropout *data_drop = (pearl_layer_data_dropout *)drop->layer_data;
     TEST_ASSERT_EQUAL_INT(drop->num_neurons, 5);
     TEST_ASSERT_EQUAL_FLOAT(data_drop->rate, 0.5);
-    TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
-    TEST_ASSERT_NOT_NULL(data_drop->weights->size);
-    TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
-    TEST_ASSERT_NOT_NULL(data_drop->weights->data);
-    for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
-        TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
-    }
+    // TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
+    // TEST_ASSERT_NOT_NULL(data_drop->weights->size);
+    // TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
+    // TEST_ASSERT_NOT_NULL(data_drop->weights->data);
+    // for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
+    //     TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
+    // }
+    TEST_ASSERT_NULL(data_drop->weights); // Add this line
 
     pearl_layer *fc = pearl_layer_create_fully_connected(5, 1);
     pearl_layer_add_child(&drop, &fc);
@@ -368,5 +371,171 @@ int main(void) {
     RUN_TEST(test_network_save_load);
     RUN_TEST(test_network_epoch_check);
     RUN_TEST(test_network_regression);
+    RUN_TEST(test_dropout_layer_forward_training_mode);
+    RUN_TEST(test_dropout_layer_forward_inference_mode);
+    RUN_TEST(test_dropout_layer_backward_pass);
     return UNITY_END();
+}
+
+// Helper function to create a simple network with one input and one dropout layer
+static pearl_network* create_simple_dropout_network(unsigned int num_neurons, float dropout_rate_val) {
+    pearl_network *network = pearl_network_create();
+    TEST_ASSERT_NOT_NULL(network);
+
+    pearl_layer *input_l = pearl_layer_create_input(num_neurons);
+    network->input_layer = input_l;
+
+    pearl_layer *dropout_l = pearl_layer_create_dropout(num_neurons);
+    ((pearl_layer_data_dropout*)dropout_l->layer_data)->rate = dropout_rate_val;
+    
+    pearl_layer_add_child(&input_l, &dropout_l);
+    network->output_layer = dropout_l; // Treat dropout as output for this simple test
+    return network;
+}
+
+void test_dropout_layer_forward_training_mode(void) {
+    unsigned int num_neurons = 1000;
+    unsigned int batch_size = 1; // Test with batch size 1 for simplicity of counting
+    float dropout_rate = 0.3f;
+    float scale = 1.0f / (1.0f - dropout_rate);
+
+    pearl_network *net = create_simple_dropout_network(num_neurons, dropout_rate);
+    net->is_training = true;
+
+    // Create input tensor (e.g., all ones)
+    pearl_tensor *input_data = pearl_tensor_create(2, num_neurons, batch_size);
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        input_data->data[i] = 1.0f;
+    }
+
+    // Set input layer's activation directly for the test
+    // Normally pearl_network_forward would handle this, but for isolated layer test:
+    if (net->input_layer->a == NULL) {
+         net->input_layer->a = pearl_tensor_create(2, num_neurons, batch_size);
+    }
+    pearl_tensor_destroy(&net->input_layer->a); // Destroy if pre-existing from create_simple
+    net->input_layer->a = pearl_tensor_copy(input_data);
+
+
+    // Perform forward pass focusing on the dropout layer
+    // The actual network forward will call layer_forward
+    pearl_layer_forward(&net->input_layer, &net->input_layer->child_layers[0], net->is_training);
+    
+    pearl_layer *dropout_layer = net->input_layer->child_layers[0];
+    pearl_tensor *output_a = dropout_layer->a;
+    pearl_layer_data_dropout *dropout_data_cast = (pearl_layer_data_dropout*)dropout_layer->layer_data;
+    pearl_tensor *mask = dropout_data_cast->weights;
+
+    TEST_ASSERT_NOT_NULL(output_a);
+    TEST_ASSERT_NOT_NULL(mask);
+    TEST_ASSERT_EQUAL_UINT(output_a->dimension, 2);
+    TEST_ASSERT_EQUAL_UINT(output_a->size[0], num_neurons);
+    TEST_ASSERT_EQUAL_UINT(output_a->size[1], batch_size);
+    TEST_ASSERT_EQUAL_UINT(mask->dimension, output_a->dimension);
+    TEST_ASSERT_EQUAL_UINT(mask->size[0], output_a->size[0]);
+    TEST_ASSERT_EQUAL_UINT(mask->size[1], output_a->size[1]);
+
+
+    unsigned int zero_count = 0;
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        if (mask->data[i] == 0.0f) {
+            zero_count++;
+            TEST_ASSERT_EQUAL_FLOAT(0.0f, output_a->data[i]);
+        } else {
+            TEST_ASSERT_EQUAL_FLOAT(1.0f, mask->data[i]);
+            TEST_ASSERT_EQUAL_FLOAT(input_data->data[i] * scale, output_a->data[i]);
+        }
+    }
+
+    // Check if the number of zeros is roughly rate * total_elements
+    // This is a probabilistic test, so allow some tolerance.
+    float expected_zeros = dropout_rate * num_neurons * batch_size;
+    float tolerance = 0.1f * num_neurons * batch_size; // 10% tolerance
+    TEST_ASSERT_FLOAT_WITHIN(tolerance, expected_zeros, (float)zero_count);
+    
+    pearl_tensor_destroy(&input_data);
+    pearl_network_destroy(&net);
+}
+
+void test_dropout_layer_forward_inference_mode(void) {
+    unsigned int num_neurons = 100;
+    unsigned int batch_size = 2;
+    float dropout_rate = 0.5f;
+
+    pearl_network *net = create_simple_dropout_network(num_neurons, dropout_rate);
+    net->is_training = false;
+
+    pearl_tensor *input_data = pearl_tensor_create(2, num_neurons, batch_size);
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        input_data->data[i] = (float)(i + 1); // Some varied data
+    }
+    
+    // Set input layer's activation
+    if (net->input_layer->a == NULL) {
+         net->input_layer->a = pearl_tensor_create(2, num_neurons, batch_size);
+    }
+    pearl_tensor_destroy(&net->input_layer->a);
+    net->input_layer->a = pearl_tensor_copy(input_data);
+
+    pearl_layer_forward(&net->input_layer, &net->input_layer->child_layers[0], net->is_training);
+
+    pearl_tensor *output_a = net->input_layer->child_layers[0]->a;
+    TEST_ASSERT_NOT_NULL(output_a);
+
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        TEST_ASSERT_EQUAL_FLOAT(input_data->data[i], output_a->data[i]);
+    }
+    
+    pearl_tensor_destroy(&input_data);
+    pearl_network_destroy(&net);
+}
+
+void test_dropout_layer_backward_pass(void) {
+    unsigned int num_neurons = 100;
+    unsigned int batch_size = 1;
+    float dropout_rate = 0.4f;
+    float scale = 1.0f / (1.0f - dropout_rate);
+
+    pearl_network *net = create_simple_dropout_network(num_neurons, dropout_rate);
+    net->is_training = true;
+
+    pearl_tensor *input_val = pearl_tensor_create(2, num_neurons, batch_size);
+    for(unsigned int i=0; i < num_neurons * batch_size; ++i) input_val->data[i] = 1.0f;
+    
+    if (net->input_layer->a == NULL) {
+        net->input_layer->a = pearl_tensor_create(2, num_neurons, batch_size);
+    }
+    pearl_tensor_destroy(&net->input_layer->a);
+    net->input_layer->a = pearl_tensor_copy(input_val);
+
+
+    // Forward pass to generate the mask
+    pearl_layer_forward(&net->input_layer, &net->input_layer->child_layers[0], net->is_training);
+
+    pearl_layer* dropout_layer = net->input_layer->child_layers[0];
+    pearl_layer_data_dropout *dropout_data_cast = (pearl_layer_data_dropout*)dropout_layer->layer_data;
+    pearl_tensor *mask = dropout_data_cast->weights;
+    TEST_ASSERT_NOT_NULL(mask);
+
+    // Manually set incoming gradients for the dropout layer (da of dropout layer)
+    if (dropout_layer->da == NULL) {
+        dropout_layer->da = pearl_tensor_create(2, num_neurons, batch_size);
+    }
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        dropout_layer->da->data[i] = (float)(i + 1); // Arbitrary gradient values
+    }
+
+    // Perform backward pass for the dropout layer
+    pearl_layer_backward(&dropout_layer, &net->input_layer); // child_layer, parent_layer
+
+    pearl_tensor *parent_da = net->input_layer->da; // This is da for the layer *before* dropout
+    TEST_ASSERT_NOT_NULL(parent_da);
+
+    for (unsigned int i = 0; i < num_neurons * batch_size; ++i) {
+        float expected_grad = dropout_layer->da->data[i] * mask->data[i] * scale;
+        TEST_ASSERT_EQUAL_FLOAT(expected_grad, parent_da->data[i]);
+    }
+
+    pearl_tensor_destroy(&input_val);
+    pearl_network_destroy(&net);
 }

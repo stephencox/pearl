@@ -22,6 +22,7 @@ typedef struct {
     pearl_loss loss;
     float learning_rate;
     pearl_version version;
+    bool is_training; // Add this line
 } pearl_network;
 
 PEARL_API pearl_network *pearl_network_create();

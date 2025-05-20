@@ -1,5 +1,8 @@
 #include <pearl_layer.h>
 #include <omp.h>
+#include <stdlib.h> // For rand(), RAND_MAX
+#include <time.h>   // For time() in srand comment
+#include <assert.h> // For assert()
 
 pearl_layer *pearl_layer_create()
 {
@@ -91,6 +94,59 @@ void pearl_layer_destroy(pearl_layer **layer)
     }
 }
 
+void pearl_layer_backward_dropout(pearl_layer **child_layer, pearl_layer **parent_layer)
+{
+    pearl_layer_data_dropout *dropout_data = (pearl_layer_data_dropout *)(*child_layer)->layer_data;
+    pearl_tensor *current_layer_da = (*child_layer)->da;
+
+    assert(dropout_data != NULL);
+    assert(dropout_data->weights != NULL);
+    assert(current_layer_da != NULL);
+
+    if ((*parent_layer)->da == NULL) {
+        if (current_layer_da->dimension == 1) {
+            (*parent_layer)->da = pearl_tensor_create(1, current_layer_da->size[0]);
+        } else if (current_layer_da->dimension == 2) {
+            (*parent_layer)->da = pearl_tensor_create(2, current_layer_da->size[0], current_layer_da->size[1]);
+        }
+    } else {
+        assert((*parent_layer)->da->dimension == current_layer_da->dimension);
+        assert((*parent_layer)->da->size[0] == current_layer_da->size[0]);
+        if (current_layer_da->dimension == 2) {
+            assert((*parent_layer)->da->size[1] == current_layer_da->size[1]);
+        }
+    }
+
+    assert(dropout_data->weights->dimension == current_layer_da->dimension);
+    assert(dropout_data->weights->size[0] == current_layer_da->size[0]);
+    if (current_layer_da->dimension == 2) {
+        assert(dropout_data->weights->size[1] == current_layer_da->size[1]);
+    }
+
+    float rate = dropout_data->rate;
+    float scale;
+    if (rate >= 1.0f - 1e-9f) { // Treat rate as 1.0 if it's very close
+        scale = 0.0f;
+    } else if (rate < 0.0f) { // Invalid rate
+        // Handle error or assert, for now, let's assume valid range or clamp
+        assert(rate >= 0.0f && rate < 1.0f); // This will fail if rate < 0
+        scale = 1.0f; // Default or error scale
+    }
+    else {
+        scale = 1.0f / (1.0f - rate);
+    }
+
+
+    unsigned int total_elements = 1;
+    for (unsigned int i = 0; i < current_layer_da->dimension; i++) {
+        total_elements *= current_layer_da->size[i];
+    }
+
+    for (unsigned int i = 0; i < total_elements; i++) {
+        (*parent_layer)->da->data[i] = current_layer_da->data[i] * dropout_data->weights->data[i] * scale;
+    }
+}
+
 PEARL_API void pearl_layer_add_child(pearl_layer **parent, pearl_layer **child)
 {
     if (*parent != NULL) {
@@ -170,12 +226,86 @@ pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons)
     layer->num_neurons = num_neurons;
     pearl_layer_data_dropout *data = calloc(1, sizeof(pearl_layer_data_dropout));
     data->rate = 0.5f;
-    data->weights = pearl_tensor_create(1, layer->num_neurons);
+    data->weights = NULL; // Change this line
     layer->layer_data = data;
     return layer;
 }
 
-void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer)
+void pearl_layer_forward_dropout(pearl_layer **parent_layer, pearl_layer **child_layer, bool is_training) // Add is_training
+{
+    pearl_tensor *input_a = (*parent_layer)->a;
+    pearl_layer_data_dropout *dropout_data = (pearl_layer_data_dropout *)(*child_layer)->layer_data;
+
+    assert(input_a != NULL);
+    assert(dropout_data != NULL);
+
+    // Manage child's activation tensor (*child_layer)->a
+    if ((*child_layer)->a == NULL) {
+        if (input_a->dimension == 1) {
+            (*child_layer)->a = pearl_tensor_create(1, input_a->size[0]);
+        } else if (input_a->dimension == 2) {
+            (*child_layer)->a = pearl_tensor_create(2, input_a->size[0], input_a->size[1]);
+        }
+    } else {
+        assert((*child_layer)->a->dimension == input_a->dimension);
+        assert((*child_layer)->a->size[0] == input_a->size[0]);
+        if (input_a->dimension == 2) {
+            assert((*child_layer)->a->size[1] == input_a->size[1]);
+        }
+    }
+
+    // Manage dropout mask tensor dropout_data->weights
+    if (dropout_data->weights == NULL) {
+        if (input_a->dimension == 1) {
+            dropout_data->weights = pearl_tensor_create(1, input_a->size[0]);
+        } else if (input_a->dimension == 2) {
+            dropout_data->weights = pearl_tensor_create(2, input_a->size[0], input_a->size[1]);
+        }
+    } else {
+        assert(dropout_data->weights->dimension == input_a->dimension);
+        assert(dropout_data->weights->size[0] == input_a->size[0]);
+        if (input_a->dimension == 2) {
+            assert(dropout_data->weights->size[1] == input_a->size[1]);
+        }
+    }
+
+    float rate = dropout_data->rate;
+    // Assert 0.0 <= rate < 1.0 for typical operation.
+    // If rate is exactly 1.0, all neurons are dropped. If 0.0, no neurons are dropped.
+    assert(rate >= 0.0f && rate < 1.0f);
+
+
+    float scale = 1.0f / (1.0f - rate);
+    if (rate >= 1.0f - 1e-9f) { // Handle rate very close or equal to 1.0
+        scale = 0.0f;
+    }
+
+
+    unsigned int total_elements = 1;
+    for (unsigned int i = 0; i < input_a->dimension; i++) {
+        total_elements *= input_a->size[i];
+    }
+
+    // Note: rand() needs to be seeded, ideally once at program start using srand(time(NULL));
+    if (is_training) {
+        for (unsigned int i = 0; i < total_elements; i++) {
+            float random_val = (float)rand() / RAND_MAX;
+            if (random_val < rate) {
+                dropout_data->weights->data[i] = 0.0f;
+            } else {
+                dropout_data->weights->data[i] = 1.0f;
+            }
+            (*child_layer)->a->data[i] = input_a->data[i] * dropout_data->weights->data[i] * scale;
+        }
+    } else {
+        // Not training, just copy data and do not apply dropout mask or scaling
+        for (unsigned int i = 0; i < total_elements; i++) {
+            (*child_layer)->a->data[i] = input_a->data[i];
+        }
+    }
+}
+
+void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer, bool is_training) // Add is_training
 {
     switch ((*child_layer)->type) {
         case pearl_layer_type_input:
@@ -183,11 +313,12 @@ void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer)
         case pearl_layer_type_fully_connected:
             pearl_layer_forward_fully_connected(parent_layer, child_layer);
             break;
-        case pearl_layer_type_dropout:
+        case pearl_layer_type_dropout: // New case
+            pearl_layer_forward_dropout(parent_layer, child_layer, is_training); // Pass is_training
             break;
     }
     for (unsigned int i = 0; i < (*child_layer)->num_child_layers; i++) {
-        pearl_layer_forward(child_layer, &(*child_layer)->child_layers[i]);
+        pearl_layer_forward(child_layer, &(*child_layer)->child_layers[i], is_training); // Pass is_training
     }
 }
 
@@ -243,7 +374,8 @@ void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer)
         case pearl_layer_type_fully_connected:
             pearl_layer_backward_fully_connected(child_layer, parent_layer);
             break;
-        case pearl_layer_type_dropout:
+        case pearl_layer_type_dropout: // New case
+            pearl_layer_backward_dropout(child_layer, parent_layer);
             break;
     }
     for (unsigned int i = 0; i < (*parent_layer)->num_parent_layers; i++) {

@@ -52,7 +52,7 @@ PEARL_API pearl_layer *pearl_layer_create_input(unsigned int num_neurons);
 PEARL_API pearl_layer *pearl_layer_create_fully_connected(unsigned int num_neurons, unsigned int num_neurons_prev_layer);
 pearl_layer *pearl_layer_create_fully_connected_blank(unsigned int num_neurons);
 PEARL_API pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons);
-void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer);
+void pearl_layer_forward(pearl_layer **parent_layer, pearl_layer **child_layer, bool is_training); // Add is_training
 void pearl_layer_forward_fully_connected(pearl_layer **parent_layer, pearl_layer **child_layer);
 void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer);
 void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer);
