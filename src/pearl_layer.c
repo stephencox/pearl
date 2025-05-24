@@ -286,7 +286,7 @@ void pearl_layer_forward_dropout(pearl_layer **parent_layer, pearl_layer **child
         total_elements *= input_a->size[i];
     }
 
-    // Note: rand() needs to be seeded, ideally once at program start using srand(time(NULL));
+    // Note: For proper operation, ensure that rand() is seeded once at program start, e.g., with srand(time(NULL)).
     if (is_training) {
         for (unsigned int i = 0; i < total_elements; i++) {
             float random_val = (float)rand() / RAND_MAX;
