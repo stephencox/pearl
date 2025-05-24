@@ -11,6 +11,7 @@ PEARL_API pearl_network *pearl_network_create()
     network->version.minor = PEARL_NETWORK_VERSION_MINOR;
     network->version.revision = PEARL_NETWORK_VERSION_REVISION;
     network->input_layer = NULL;
+    network->is_training = true; // Add this line
     return network;
 }
 
@@ -18,18 +19,17 @@ PEARL_API void pearl_network_destroy(pearl_network **network)
 {
     if (*network != NULL) {
         if ((*network)->input_layer != NULL) {
-            pearl_layer_destroy(&(*network)->input_layer);
-            free((*network)->input_layer);
-            (*network)->input_layer = NULL;
+            pearl_layer_destroy(&((*network)->input_layer)); // This will free the layer and set (*network)->input_layer to NULL.
         }
-
-        free(*network);
+        // No need to free (*network)->input_layer again or set it to NULL here.
+        free(*network); // Free the network struct itself
         *network = NULL;
     }
 }
 
 PEARL_API float pearl_network_train_epoch(pearl_network **network, const pearl_tensor *input, const pearl_tensor *output)
 {
+    (*network)->is_training = true; // Set is_training to true for training
     // Forward
     pearl_network_forward(network, input);
 
@@ -65,7 +65,7 @@ void pearl_network_forward(pearl_network **network, const pearl_tensor *input)
 
     /* Recursive forward other layers */
     for (unsigned int i = 0; i < (*network)->input_layer->num_child_layers; i++) {
-        pearl_layer_forward(&(*network)->input_layer, &(*network)->input_layer->child_layers[i]);
+        pearl_layer_forward(&(*network)->input_layer, &(*network)->input_layer->child_layers[i], (*network)->is_training); // Pass is_training
     }
 }
 
@@ -93,6 +93,7 @@ void pearl_network_backward(pearl_network **network, const pearl_tensor *output)
 
 PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input)
 {
+    (*network)->is_training = false; // Set is_training to false for calculation/inference
     pearl_network_forward(network, input);
     pearl_tensor *output = pearl_tensor_copy((*network)->output_layer->a);
     return output;

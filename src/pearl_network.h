@@ -2,6 +2,7 @@
 #define PEARL_NETWORK_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <pearl_global.h>
 #include <pearl_layer.h>
 #include <pearl_optimiser.h>
@@ -22,6 +23,7 @@ typedef struct {
     pearl_loss loss;
     float learning_rate;
     pearl_version version;
+    bool is_training;
 } pearl_network;
 
 PEARL_API pearl_network *pearl_network_create();
