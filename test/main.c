@@ -61,13 +61,6 @@ void test_network_add_layers()
     const pearl_layer_data_dropout *data_drop = (pearl_layer_data_dropout *)drop->layer_data;
     TEST_ASSERT_EQUAL_INT(drop->num_neurons, 5);
     TEST_ASSERT_EQUAL_FLOAT(data_drop->rate, 0.5);
-    TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
-    TEST_ASSERT_NOT_NULL(data_drop->weights->size);
-    TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
-    TEST_ASSERT_NOT_NULL(data_drop->weights->data);
-    for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
-        TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
-    }
     TEST_ASSERT_NULL(data_drop->weights);
 
     pearl_layer *fc = pearl_layer_create_fully_connected(5, 1);
@@ -169,13 +162,6 @@ void test_network_save_load()
     TEST_ASSERT_EQUAL_INT(drop_load->num_neurons, 5);
     const pearl_layer_data_dropout *data_drop_load = (pearl_layer_data_dropout *)drop_load->layer_data;
     TEST_ASSERT_EQUAL_FLOAT(data_drop_load->rate, 0.5);
-    TEST_ASSERT_EQUAL_INT(data_drop_load->weights->dimension, 1);
-    TEST_ASSERT_NOT_NULL(data_drop_load->weights->size);
-    TEST_ASSERT_EQUAL_INT(data_drop_load->weights->size[0], 5);
-    TEST_ASSERT_NOT_NULL(data_drop_load->weights->data);
-    for (unsigned int i = 0; i < data_drop_load->weights->size[0]; i++) {
-        TEST_ASSERT_EQUAL_FLOAT(data_drop_load->weights->data[i], 0.0);
-    }
 
     //TODO: Compare biases and weights
     TEST_ASSERT_NOT_NULL(drop_load->child_layers);

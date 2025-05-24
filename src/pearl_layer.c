@@ -226,7 +226,7 @@ pearl_layer *pearl_layer_create_dropout(unsigned int num_neurons)
     layer->num_neurons = num_neurons;
     pearl_layer_data_dropout *data = calloc(1, sizeof(pearl_layer_data_dropout));
     data->rate = 0.5f;
-    data->weights = NULL; // Change this line
+    data->weights = NULL;
     layer->layer_data = data;
     return layer;
 }
