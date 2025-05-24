@@ -2,11 +2,11 @@
 #include <pearl_network.h>
 #include <pearl_json.h>
 #include <pearl_print.h>
-#include <time.h> // For time()
+#include <time.h>
 
 void setUp(void)
 {
-    srand(time(NULL)); // Seed for randomness in tests
+    srand(time(NULL));
 }
 
 void tearDown(void)
@@ -61,14 +61,14 @@ void test_network_add_layers()
     const pearl_layer_data_dropout *data_drop = (pearl_layer_data_dropout *)drop->layer_data;
     TEST_ASSERT_EQUAL_INT(drop->num_neurons, 5);
     TEST_ASSERT_EQUAL_FLOAT(data_drop->rate, 0.5);
-    // TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
-    // TEST_ASSERT_NOT_NULL(data_drop->weights->size);
-    // TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
-    // TEST_ASSERT_NOT_NULL(data_drop->weights->data);
-    // for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
-    //     TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
-    // }
-    TEST_ASSERT_NULL(data_drop->weights); // Add this line
+    TEST_ASSERT_EQUAL_INT(data_drop->weights->dimension, 1);
+    TEST_ASSERT_NOT_NULL(data_drop->weights->size);
+    TEST_ASSERT_EQUAL_INT(data_drop->weights->size[0], 5);
+    TEST_ASSERT_NOT_NULL(data_drop->weights->data);
+    for (unsigned int i = 0; i < data_drop->weights->size[0]; i++) {
+        TEST_ASSERT_EQUAL_FLOAT(data_drop->weights->data[i], 0.0);
+    }
+    TEST_ASSERT_NULL(data_drop->weights);
 
     pearl_layer *fc = pearl_layer_create_fully_connected(5, 1);
     pearl_layer_add_child(&drop, &fc);
@@ -364,19 +364,6 @@ void test_network_regression()
     pearl_tensor_destroy(&pred);
 }
 
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_network_create);
-    RUN_TEST(test_network_add_layers);
-    RUN_TEST(test_network_save_load);
-    RUN_TEST(test_network_epoch_check);
-    RUN_TEST(test_network_regression);
-    RUN_TEST(test_dropout_layer_forward_training_mode);
-    RUN_TEST(test_dropout_layer_forward_inference_mode);
-    RUN_TEST(test_dropout_layer_backward_pass);
-    return UNITY_END();
-}
-
 // Helper function to create a simple network with one input and one dropout layer
 static pearl_network* create_simple_dropout_network(unsigned int num_neurons, float dropout_rate_val) {
     pearl_network *network = pearl_network_create();
@@ -538,4 +525,17 @@ void test_dropout_layer_backward_pass(void) {
 
     pearl_tensor_destroy(&input_val);
     pearl_network_destroy(&net);
+}
+
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_network_create);
+    RUN_TEST(test_network_add_layers);
+    RUN_TEST(test_network_save_load);
+    RUN_TEST(test_network_epoch_check);
+    RUN_TEST(test_network_regression);
+    RUN_TEST(test_dropout_layer_forward_training_mode);
+    RUN_TEST(test_dropout_layer_forward_inference_mode);
+    RUN_TEST(test_dropout_layer_backward_pass);
+    return UNITY_END();
 }
