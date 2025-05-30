@@ -1,5 +1,4 @@
-#ifndef PEARL_LOSS_H
-#define PEARL_LOSS_H
+#pragma once
 
 #include <pearl_tensor.h>
 #include <math.h>
@@ -21,5 +20,3 @@ float pearl_loss_binary_cross_entropy_func(float out, float pred);
 float pearl_loss_mean_squared_error_func(float out, float pred);
 float pearl_loss_binary_cross_entropy_func_derivative(float out, float pred);
 float pearl_loss_mean_squared_error_func_derivative(float out, float pred);
-
-#endif // PEARL_LOSS_H

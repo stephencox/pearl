@@ -1,5 +1,4 @@
-#ifndef PEARL_ACTIVATION_H
-#define PEARL_ACTIVATION_H
+#pragma once
 
 #include <pearl_global.h>
 #include <math.h>
@@ -26,5 +25,3 @@ float pearl_activation_function_derivative_linear(float input);
 float pearl_activation_function_derivative_relu(float input);
 float pearl_activation_function_derivative_tanh(float input);
 float pearl_activation_function_derivative_sigmoid(float input);
-
-#endif // PEARL_ACTIVATION_H
