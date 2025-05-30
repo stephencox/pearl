@@ -1,5 +1,4 @@
-#ifndef PEARL_NETWORK_H
-#define PEARL_NETWORK_H
+#pragma once
 
 #include <stdlib.h>
 #include <pearl_global.h>
@@ -30,5 +29,3 @@ PEARL_API float pearl_network_train_epoch(pearl_network **network, const pearl_t
 void pearl_network_forward(pearl_network **network, const pearl_tensor *input);
 void pearl_network_backward(pearl_network **network, const pearl_tensor *output);
 PEARL_API pearl_tensor *pearl_network_calculate(pearl_network **network, const pearl_tensor *input);
-
-#endif // PEARL_NETWORK_H

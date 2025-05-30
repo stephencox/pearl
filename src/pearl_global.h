@@ -1,5 +1,4 @@
-#ifndef PEARL_GLOBAL_H
-#define PEARL_GLOBAL_H
+#pragma once
 
 #if _WIN32 || _WIN64
     #if defined(PEARL_LIBRARY)
@@ -10,5 +9,3 @@
 #else
     #define PEARL_API
 #endif
-
-#endif // PEARL_GLOBAL_H

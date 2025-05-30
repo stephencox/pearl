@@ -1,8 +1,5 @@
-#ifndef PEARL_OPTIMISER_H
-#define PEARL_OPTIMISER_H
+#pragma once
 
 typedef enum {
     pearl_optimiser_sgd
 } pearl_optimiser;
-
-#endif // PEARL_OPTIMISER_H

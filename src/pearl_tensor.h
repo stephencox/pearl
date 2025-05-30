@@ -1,5 +1,4 @@
-#ifndef PEARL_TENSOR_H
-#define PEARL_TENSOR_H
+#pragma once
 
 #include <stdlib.h>
 #include <assert.h>
@@ -22,5 +21,3 @@ PEARL_API pearl_tensor *pearl_tensor_create(const int num_args, ...);
 PEARL_API void pearl_tensor_destroy(pearl_tensor **x);
 PEARL_API pearl_tensor *pearl_tensor_copy(const pearl_tensor *x);
 PEARL_API void pearl_tensor_reduce_dimension(pearl_tensor **x, const unsigned int dimension);
-
-#endif //PEARL_TENSOR_H

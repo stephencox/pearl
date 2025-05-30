@@ -1,5 +1,4 @@
-#ifndef PEARL_LAYER_H
-#define PEARL_LAYER_H
+#pragma once
 
 #include <stdlib.h>
 #include <math.h>
@@ -58,5 +57,3 @@ void pearl_layer_backward(pearl_layer **child_layer, pearl_layer **parent_layer)
 void pearl_layer_backward_fully_connected(pearl_layer **child_layer, pearl_layer **parent_layer);
 void pearl_layer_update(pearl_layer **child_layer, float learning_rate);
 void pearl_layer_update_fully_connected(pearl_layer **child_layer, float learning_rate);
-
-#endif // PEARL_LAYER_H
